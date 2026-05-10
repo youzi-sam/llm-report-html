@@ -18,8 +18,13 @@ export function createEncodings({ diagramPalette, diagramRenderers, reactive }) 
     },
 
     code: section => {
-      const pre = el('pre')
-      pre.appendChild(el('code', { class: section.lang ? `lang-${section.lang}` : '' }, [text(section.code || '')]))
+      const pre = el('pre', { class: 'code-block' })
+      const classes = ['chroma']
+      if (section.lang) classes.push(`lang-${section.lang}`)
+      const code = el('code', { class: classes.join(' ') })
+      if (section.__html) code.innerHTML = section.__html
+      else code.textContent = section.code || ''
+      pre.appendChild(code)
       return pre
     },
 

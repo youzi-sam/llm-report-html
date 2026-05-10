@@ -53,6 +53,8 @@ func enrichSection(section map[string]any) {
 		section["__html"] = markdownBlock(stringField(section, "text"))
 	case "quote":
 		section["__textHtml"] = markdownInline(stringField(section, "text"))
+	case "code":
+		section["__html"] = highlightCode(stringField(section, "code"), stringField(section, "lang"))
 	case "callout":
 		section["__html"] = markdownBlock(stringField(section, "text"))
 	case "list":

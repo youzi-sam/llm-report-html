@@ -67,6 +67,9 @@ func runtimeFor(features Features) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
+	if hasFeature(features.Surfaces, "code") {
+		css += "\n" + codeHighlightCSS()
+	}
 	packs := make([]string, 0, 2+len(features.DiagramKinds))
 	if features.Reactive {
 		packs = append(packs, "reactive")
@@ -95,6 +98,15 @@ func runtimeFor(features Features) (string, string, error) {
 		scripts.WriteString("</script>\n")
 	}
 	return css, strings.TrimRight(scripts.String(), "\n"), nil
+}
+
+func hasFeature(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
 }
 
 func isDagreDiagram(kind string) bool {

@@ -32,6 +32,23 @@ func TestPrepareRenderDataPrecompilesMarkdown(t *testing.T) {
 	}
 }
 
+func TestPrepareRenderDataHighlightsCode(t *testing.T) {
+	raw := []byte(`{"sections":[{"type":"code","lang":"go","code":"package main\nfunc main() {}"}]}`)
+	renderData, err := PrepareRenderData(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(renderData, &doc); err != nil {
+		t.Fatal(err)
+	}
+	code := doc["sections"].([]any)[0].(map[string]any)
+	html := code["__html"].(string)
+	if !strings.Contains(html, "ch-") || !strings.Contains(html, "package") {
+		t.Fatalf("expected highlighted code HTML, got %q", html)
+	}
+}
+
 func TestRenderKeepsExtractableSourceDataSeparateFromRenderData(t *testing.T) {
 	raw := []byte(`{"sections":[{"type":"paragraph","text":"**hi**"}]}`)
 	out, err := Render(raw)
