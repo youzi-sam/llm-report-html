@@ -1,14 +1,26 @@
-# build artifacts
+# ─── build artifacts ───────────────────────────────────────────────
 bin/
 template/dist/
 template/node_modules/
 
-# generated skill artifacts (run `make skill` to regenerate)
+# ─── per-developer .claude/ state (NOT part of the deliverable) ────
+# Only .claude/skills/llm-report-html/ is committed. Everything else
+# under .claude/ is per-user agent state (settings.local.json, state/,
+# projects/, memory/, plans/, scheduled_tasks.json, agents/, hooks/,
+# commands/, …) and must not leak into the repo.
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/llm-report-html/
+
+# ─── generated skill artifacts (run `make skill` to regenerate) ────
 .claude/skills/llm-report-html/SKILL.md
 .claude/skills/llm-report-html/references/
 .claude/skills/llm-report-html/assets/
+.claude/skills/llm-report-html/scripts/node_modules/
+.claude/skills/llm-report-html/scripts/package-lock.json
 
-# runtime / agent-generated reports at project root
+# ─── runtime / agent-generated reports at project root ─────────────
 /cf.html
 /cf.json
 /cf.md
@@ -16,10 +28,36 @@ template/node_modules/
 /report.json
 /report.md
 
-# generic html (cf.html etc) — but allow examples + template index.html
+# generic .html (cf.html, tax-vibe.html, mockup.html, …)
+# allow only the template entry/dist
 *.html
 !template/index.html
 !template/dist/index.html
 
-# system
+# ─── Go ────────────────────────────────────────────────────────────
+*.test
+coverage.out
+coverage.html
+vendor/
+
+# ─── Node / npm ────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── editor / IDE ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── env / secrets ─────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── system ────────────────────────────────────────────────────────
 .DS_Store
+Thumbs.db

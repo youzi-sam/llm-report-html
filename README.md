@@ -16,7 +16,7 @@ Reports are deliverables: open in a browser, attach to email, paste in chat. Opt
 ## Install
 
 ```bash
-git clone <repo> && cd llm-report-html
+git clone https://github.com/yansir/llm-report-html.git && cd llm-report-html
 make             # build binary + populate skill folder
 make install     # copy bin/llm-report-html to ~/.local/bin/
 ```
@@ -28,7 +28,9 @@ ln -s "$(pwd)/.claude/skills/llm-report-html" ~/.claude/skills/llm-report-html
 
 That single symlink makes the skill available in any project, any Claude / Cursor / Codex session.
 
-Requires Go ≥ 1.22 and Node (Vite-built template).
+Requires Go ≥ 1.22 and Node ≥ 18.
+
+> Windows: run from WSL or Git Bash. The helper scripts (`install-binary.sh`, `validate-mermaid.sh`) are POSIX shell.
 
 ---
 
