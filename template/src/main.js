@@ -56,6 +56,7 @@ const CATALOG = {
   faq:        { kind: 'encoding', binds: 'faq' },
   callout:    { kind: 'encoding', binds: 'callout' },
   mermaid:    { kind: 'encoding', binds: 'mermaid' },
+  diagram:    { kind: 'encoding', binds: 'diagram' },
   image:      { kind: 'encoding', binds: 'image' },
   input:      { kind: 'encoding', binds: 'input' },
   stat:       { kind: 'encoding', binds: 'stat' },
@@ -185,6 +186,32 @@ const encodings = {
     const wrap = el('div', { class: 'mermaid-block' }, [])
     const id = 'm' + Math.random().toString(36).slice(2, 9)
     mermaid.render(id, s.code || '').then(({ svg }) => { wrap.innerHTML = svg })
+      .catch(e => { wrap.innerHTML = `<div class="report-error">mermaid: ${e.message}</div>` })
+    return wrap
+  },
+
+  // Structured diagram → translated to mermaid by kind, then rendered
+  // through the same pipeline as the raw `mermaid` surface. AI never writes
+  // mermaid DSL for kinds covered here.
+  diagram: s => {
+    const wrap = el('div', { class: 'mermaid-block' }, [])
+    let code
+    try {
+      if (s.kind === 'flow')          code = flowToMermaid(s)
+      else if (s.kind === 'sequence') code = sequenceToMermaid(s)
+      else if (s.kind === 'quadrant') code = quadrantToMermaid(s)
+      else if (s.kind === 'tree')     code = treeToMermaid(s)
+      else if (s.kind === 'state')    code = stateToMermaid(s)
+      else {
+        wrap.innerHTML = `<div class="report-error">diagram: unknown kind "${s.kind}"</div>`
+        return wrap
+      }
+    } catch (e) {
+      wrap.innerHTML = `<div class="report-error">diagram: ${e.message}</div>`
+      return wrap
+    }
+    const id = 'd' + Math.random().toString(36).slice(2, 9)
+    mermaid.render(id, code).then(({ svg }) => { wrap.innerHTML = svg })
       .catch(e => { wrap.innerHTML = `<div class="report-error">mermaid: ${e.message}</div>` })
     return wrap
   },
@@ -481,6 +508,117 @@ function htmlBlock(html, tag = 'div') {
   const n = document.createElement(tag)
   n.innerHTML = html
   return n
+}
+
+// Translate structured `diagram.flow` → mermaid flowchart DSL. Always
+// quotes labels (`["text"]`) so brackets / colons / Chinese / arrows in
+// label text don't break the parse.
+function flowToMermaid(s) {
+  const dir = s.direction || 'LR'
+  const lines = [`flowchart ${dir}`]
+  const SHAPES = {
+    rect:    ['["',  '"]'],
+    round:   ['("',  '")'],
+    stadium: ['(["', '"])'],
+    diamond: ['{"',  '"}'],
+    circle:  ['(("', '"))'],
+  }
+  const esc = v => String(v ?? '').replace(/"/g, '&quot;')
+  for (const n of s.nodes || []) {
+    const [open, close] = SHAPES[n.shape || 'rect'] || SHAPES.rect
+    lines.push(`  ${n.id}${open}${esc(n.label)}${close}`)
+  }
+  for (const e of s.edges || []) {
+    const arrow = e.style === 'dotted' ? '-.->'
+                : e.style === 'thick'  ? '==>'
+                : '-->'
+    if (e.label) lines.push(`  ${e.from} ${arrow}|"${esc(e.label)}"| ${e.to}`)
+    else         lines.push(`  ${e.from} ${arrow} ${e.to}`)
+  }
+  return lines.join('\n')
+}
+
+// Translate structured `diagram.sequence` → mermaid sequenceDiagram DSL.
+// Actors get aliases (A0, A1, …) so non-ASCII names with spaces don't
+// collide with the participant declaration syntax.
+function sequenceToMermaid(s) {
+  const lines = ['sequenceDiagram']
+  const alias = new Map()
+  ;(s.actors || []).forEach((a, i) => {
+    const id = 'A' + i
+    alias.set(a, id)
+    const name = String(a).replace(/"/g, '&quot;')
+    lines.push(`  participant ${id} as ${name}`)
+  })
+  for (const m of s.messages || []) {
+    const from = alias.get(m.from) ?? m.from
+    const to   = alias.get(m.to)   ?? m.to
+    const arrow = m.style === 'dashed' ? '-->>' : '->>'
+    const text = String(m.text ?? '').replace(/[\r\n]+/g, ' ')
+    lines.push(`  ${from}${arrow}${to}: ${text}`)
+  }
+  return lines.join('\n')
+}
+
+// Translate `diagram.quadrant` → mermaid quadrantChart. Strings are quoted
+// so spaces / colons / Chinese in axis labels and item names are safe.
+function quadrantToMermaid(s) {
+  const lines = ['quadrantChart']
+  const esc = v => String(v ?? '').replace(/"/g, '&quot;')
+  if (s.title) lines.push(`  title ${esc(s.title)}`)
+  const ax = s.axes?.x || {}
+  const ay = s.axes?.y || {}
+  if (ax.low && ax.high) lines.push(`  x-axis "${esc(ax.low)}" --> "${esc(ax.high)}"`)
+  else if (ax.label)     lines.push(`  x-axis "${esc(ax.label)}"`)
+  if (ay.low && ay.high) lines.push(`  y-axis "${esc(ay.low)}" --> "${esc(ay.high)}"`)
+  else if (ay.label)     lines.push(`  y-axis "${esc(ay.label)}"`)
+  const q = s.quadrants || {}
+  if (q.q1) lines.push(`  quadrant-1 ${esc(q.q1)}`)
+  if (q.q2) lines.push(`  quadrant-2 ${esc(q.q2)}`)
+  if (q.q3) lines.push(`  quadrant-3 ${esc(q.q3)}`)
+  if (q.q4) lines.push(`  quadrant-4 ${esc(q.q4)}`)
+  const clamp = v => Math.min(1, Math.max(0, Number(v) || 0))
+  for (const item of s.items || []) {
+    lines.push(`  "${esc(item.label)}": [${clamp(item.x)}, ${clamp(item.y)}]`)
+  }
+  return lines.join('\n')
+}
+
+// Translate `diagram.tree` → mermaid mindmap. Indentation drives
+// hierarchy; root uses circle shape `((label))`.
+function treeToMermaid(s) {
+  const lines = ['mindmap']
+  const sanitize = v => String(v ?? '').replace(/[\r\n]+/g, ' ')
+  function walk(node, depth) {
+    const indent = '  '.repeat(depth + 1)
+    const label = sanitize(node?.label)
+    if (depth === 0) lines.push(`${indent}root((${label}))`)
+    else             lines.push(`${indent}${label}`)
+    for (const c of node?.children || []) walk(c, depth + 1)
+  }
+  if (s.root) walk(s.root, 0)
+  return lines.join('\n')
+}
+
+// Translate `diagram.state` → mermaid stateDiagram-v2. Distinct labels are
+// emitted via `state "label" as id`; `[*]` is reserved for initial/final.
+function stateToMermaid(s) {
+  const lines = ['stateDiagram-v2']
+  const esc = v => String(v ?? '').replace(/"/g, '&quot;').replace(/[\r\n]+/g, ' ')
+  for (const st of s.states || []) {
+    if (st.label && st.label !== st.id) {
+      lines.push(`  state "${esc(st.label)}" as ${st.id}`)
+    }
+  }
+  if (s.initial) lines.push(`  [*] --> ${s.initial}`)
+  for (const t of s.transitions || []) {
+    if (t.label) lines.push(`  ${t.from} --> ${t.to}: ${esc(t.label)}`)
+    else         lines.push(`  ${t.from} --> ${t.to}`)
+  }
+  for (const f of s.final || []) {
+    lines.push(`  ${f} --> [*]`)
+  }
+  return lines.join('\n')
 }
 function errorNode(msg) {
   const d = document.createElement('div')

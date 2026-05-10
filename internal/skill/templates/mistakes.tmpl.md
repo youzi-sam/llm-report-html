@@ -87,3 +87,4 @@ Lint is run as part of `validate`; pass `--strict` to make warnings fatal.
 - **trivial-layout** — `tabs` or `columns` with only 1 item; you probably want a different surface
 - **empty-container** — `details` or `aside` with no nested sections
 - **empty-callout** — `callout` with empty `text`; almost always means content was placed as a sibling and escapes the box (see "Empty-text callout" above)
+- **undeclared-node** — `diagram.flow` edge with `from` or `to` referencing a node id not declared in the `nodes` array

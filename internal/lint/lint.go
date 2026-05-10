@@ -146,6 +146,89 @@ func Lint(raw []byte) ([]Warning, error) {
 				ws = append(ws, Warning{path + ".text", "empty-callout",
 					"callout has no body text — use heading if you only want a colored label, or move sibling content into text as markdown"})
 			}
+		case "diagram":
+			kind, _ := s["kind"].(string)
+			if kind == "flow" {
+				ids := map[string]bool{}
+				if nodes, ok := s["nodes"].([]interface{}); ok {
+					for _, n := range nodes {
+						if nm, ok := n.(map[string]interface{}); ok {
+							if id, _ := nm["id"].(string); id != "" {
+								ids[id] = true
+							}
+						}
+					}
+				}
+				if edges, ok := s["edges"].([]interface{}); ok {
+					for i, e := range edges {
+						em, ok := e.(map[string]interface{})
+						if !ok {
+							continue
+						}
+						for _, end := range []string{"from", "to"} {
+							ref, _ := em[end].(string)
+							if ref != "" && !ids[ref] {
+								ws = append(ws, Warning{
+									fmt.Sprintf("%s.edges[%d].%s", path, i, end),
+									"undeclared-node",
+									fmt.Sprintf("edge references node id %q which is not declared in nodes[]", ref),
+								})
+							}
+						}
+					}
+				}
+			}
+			if kind == "state" {
+				ids := map[string]bool{}
+				if states, ok := s["states"].([]interface{}); ok {
+					for _, n := range states {
+						if nm, ok := n.(map[string]interface{}); ok {
+							if id, _ := nm["id"].(string); id != "" {
+								ids[id] = true
+							}
+						}
+					}
+				}
+				check := func(field, ref string, idx int) {
+					if ref != "" && !ids[ref] {
+						loc := fmt.Sprintf("%s.%s", path, field)
+						if idx >= 0 {
+							loc = fmt.Sprintf("%s.transitions[%d].%s", path, idx, field)
+						}
+						ws = append(ws, Warning{
+							loc,
+							"undeclared-node",
+							fmt.Sprintf("references state id %q which is not declared in states[]", ref),
+						})
+					}
+				}
+				if init, _ := s["initial"].(string); init != "" {
+					check("initial", init, -1)
+				}
+				if finals, ok := s["final"].([]interface{}); ok {
+					for i, f := range finals {
+						if id, _ := f.(string); id != "" && !ids[id] {
+							ws = append(ws, Warning{
+								fmt.Sprintf("%s.final[%d]", path, i),
+								"undeclared-node",
+								fmt.Sprintf("references state id %q which is not declared in states[]", id),
+							})
+						}
+					}
+				}
+				if trs, ok := s["transitions"].([]interface{}); ok {
+					for i, t := range trs {
+						tm, ok := t.(map[string]interface{})
+						if !ok {
+							continue
+						}
+						for _, end := range []string{"from", "to"} {
+							ref, _ := tm[end].(string)
+							check(end, ref, i)
+						}
+					}
+				}
+			}
 		}
 
 		// scan text-bearing fields for {$bind:NAME}

@@ -103,7 +103,16 @@
       "fields": [
         "code"
       ],
-      "usage": "流程/时序/状态/甘特/思维导图，code 是 mermaid 文法"
+      "usage": "ESCAPE HATCH ONLY: 自定义形状/subgraph/Sankey/C4 等 diagram 表达不了的图。优先用 diagram。"
+    },
+    "diagram": {
+      "kind": "encoding",
+      "binds": "diagram",
+      "fields": [
+        "kind",
+        "..."
+      ],
+      "usage": "结构化图形,kind=flow|sequence|quadrant|tree|state。AI 填字段,渲染器生成 mermaid。优先级高于 mermaid。"
     },
     "image": {
       "kind": "encoding",
@@ -180,7 +189,8 @@
     "image_src_constraint": "`image.src` must be `https://…` or `data:…` URI. Local paths (`file://`, `/var/...`, etc.) break the single-file deliverable promise — the rendered HTML must remain self-contained even after being moved or shared.",
     "markdown_in_text_fields": "Inline markdown (bold, italic, links) is supported in: `paragraph.text`, `callout.text`, `quote.text`, `list` items, `table` cells, `definition.def`, `faq.a`. Block-level markdown (headings, lists) inside these fields is NOT supported — use the dedicated surface for those.",
     "additional_properties_rejected": "Every section schema is `additionalProperties: false`. Adding fields not declared in `$defs/section.<type>` fails validation. Don't try to smuggle metadata via undeclared keys; if a field is missing, file a real schema change.",
-    "section_if_visibility": "Any section may include `if`: a boolean literal or `{\"$bind\":\"cell\"}`. When false, HTML hides the section; Markdown skips it. The bound cell can be `state` or `computed`."
+    "section_if_visibility": "Any section may include `if`: a boolean literal or `{\"$bind\":\"cell\"}`. When false, HTML hides the section; Markdown skips it. The bound cell can be `state` or `computed`.",
+    "diagram_over_mermaid": "For flowcharts and sequence diagrams, prefer `diagram` (with `kind: flow` or `kind: sequence`) over raw `mermaid`. The `diagram` surface accepts structured fields (nodes/edges/actors/messages) and the renderer generates correct mermaid syntax — no escaping or DSL traps. Use `mermaid` only when `diagram` cannot express the picture (subgraphs, custom shapes, Sankey, C4, ER, class diagrams)."
   },
   "type": "object",
   "additionalProperties": false,
@@ -239,6 +249,7 @@
             "faq",
             "callout",
             "mermaid",
+            "diagram",
             "image",
             "input",
             "stat",
@@ -533,6 +544,21 @@
           },
           "then": {
             "$ref": "#/$defs/section.aside"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "diagram"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/section.diagram"
           }
         }
       ]
@@ -1339,6 +1365,603 @@
         {
           "type": "mermaid",
           "code": "flowchart LR\n  A[\"用户\"] --> B[\"边缘节点\"]\n  B --> C[\"源站\"]"
+        }
+      ]
+    },
+    "section.diagram": {
+      "type": "object",
+      "required": [
+        "type",
+        "kind"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "enum": [
+            "flow",
+            "sequence",
+            "quadrant",
+            "tree",
+            "state"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "flow"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/diagram.flow"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "sequence"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/diagram.sequence"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "quadrant"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/diagram.quadrant"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "tree"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/diagram.tree"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "state"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/diagram.state"
+          }
+        }
+      ]
+    },
+    "diagram.flow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "const": "flow"
+        },
+        "direction": {
+          "enum": [
+            "TB",
+            "LR",
+            "RL",
+            "BT"
+          ],
+          "default": "LR"
+        },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "shape": {
+                "enum": [
+                  "rect",
+                  "round",
+                  "stadium",
+                  "diamond",
+                  "circle"
+                ],
+                "default": "rect"
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "style": {
+                "enum": [
+                  "solid",
+                  "dotted",
+                  "thick"
+                ],
+                "default": "solid"
+              }
+            }
+          }
+        },
+        "if": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "$bind"
+              ],
+              "properties": {
+                "$bind": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "type": "diagram",
+          "kind": "flow",
+          "direction": "LR",
+          "nodes": [
+            { "id": "n1", "label": "提案", "shape": "round" },
+            { "id": "n2", "label": "调研做过吗?", "shape": "diamond" },
+            { "id": "n3", "label": "立项" },
+            { "id": "n4", "label": "先做调研" }
+          ],
+          "edges": [
+            { "from": "n1", "to": "n2" },
+            { "from": "n2", "to": "n3", "label": "是" },
+            { "from": "n2", "to": "n4", "label": "否" }
+          ]
+        }
+      ]
+    },
+    "diagram.sequence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "actors",
+        "messages"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "const": "sequence"
+        },
+        "actors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to",
+              "text"
+            ],
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "style": {
+                "enum": [
+                  "solid",
+                  "dashed"
+                ],
+                "default": "solid"
+              }
+            }
+          }
+        },
+        "if": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "$bind"
+              ],
+              "properties": {
+                "$bind": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "type": "diagram",
+          "kind": "sequence",
+          "actors": ["用户", "前端", "API"],
+          "messages": [
+            { "from": "用户", "to": "前端", "text": "点击提交" },
+            { "from": "前端", "to": "API", "text": "POST /orders" },
+            { "from": "API", "to": "前端", "text": "201 Created", "style": "dashed" }
+          ]
+        }
+      ]
+    },
+    "diagram.quadrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "axes",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "const": "quadrant"
+        },
+        "title": {
+          "type": "string"
+        },
+        "axes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "x",
+            "y"
+          ],
+          "properties": {
+            "x": {
+              "$ref": "#/$defs/diagram.quadrant.axis"
+            },
+            "y": {
+              "$ref": "#/$defs/diagram.quadrant.axis"
+            }
+          }
+        },
+        "quadrants": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "q1": { "type": "string" },
+            "q2": { "type": "string" },
+            "q3": { "type": "string" },
+            "q4": { "type": "string" }
+          }
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "x",
+              "y"
+            ],
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "x": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "y": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        },
+        "if": {
+          "anyOf": [
+            { "type": "boolean" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [ "$bind" ],
+              "properties": {
+                "$bind": { "type": "string", "minLength": 1 }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "type": "diagram",
+          "kind": "quadrant",
+          "axes": {
+            "x": { "low": "不紧急", "high": "紧急" },
+            "y": { "low": "不重要", "high": "重要" }
+          },
+          "quadrants": {
+            "q1": "重要紧急",
+            "q2": "重要不紧急",
+            "q3": "不重要不紧急",
+            "q4": "不重要紧急"
+          },
+          "items": [
+            { "label": "客户故障",   "x": 0.9,  "y": 0.85 },
+            { "label": "战略规划",   "x": 0.2,  "y": 0.9 },
+            { "label": "回邮件",     "x": 0.8,  "y": 0.2 },
+            { "label": "刷推",       "x": 0.1,  "y": 0.1 }
+          ]
+        }
+      ]
+    },
+    "diagram.quadrant.axis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string" },
+        "low":   { "type": "string" },
+        "high":  { "type": "string" }
+      }
+    },
+    "diagram.tree": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "root"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "const": "tree"
+        },
+        "root": {
+          "$ref": "#/$defs/diagram.tree.node"
+        },
+        "if": {
+          "anyOf": [
+            { "type": "boolean" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [ "$bind" ],
+              "properties": {
+                "$bind": { "type": "string", "minLength": 1 }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "type": "diagram",
+          "kind": "tree",
+          "root": {
+            "label": "前端框架",
+            "children": [
+              {
+                "label": "React 系",
+                "children": [
+                  { "label": "Next.js" },
+                  { "label": "Remix" }
+                ]
+              },
+              {
+                "label": "Vue 系",
+                "children": [{ "label": "Nuxt" }]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "diagram.tree.node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagram.tree.node"
+          }
+        }
+      }
+    },
+    "diagram.state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "states",
+        "transitions"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "const": "state"
+        },
+        "states": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [ "id" ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "initial": {
+          "type": "string",
+          "description": "id of the starting state — emits `[*] --> id`"
+        },
+        "final": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "ids of terminal states — each emits `id --> [*]`"
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [ "from", "to" ],
+            "properties": {
+              "from": { "type": "string" },
+              "to":   { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        },
+        "if": {
+          "anyOf": [
+            { "type": "boolean" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [ "$bind" ],
+              "properties": {
+                "$bind": { "type": "string", "minLength": 1 }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "type": "diagram",
+          "kind": "state",
+          "states": [
+            { "id": "Draft",     "label": "草稿" },
+            { "id": "Review",    "label": "评审中" },
+            { "id": "Published", "label": "已发布" }
+          ],
+          "initial": "Draft",
+          "final":   ["Published"],
+          "transitions": [
+            { "from": "Draft",  "to": "Review",    "label": "提交" },
+            { "from": "Review", "to": "Published", "label": "通过" },
+            { "from": "Review", "to": "Draft",     "label": "驳回" }
+          ]
         }
       ]
     },
