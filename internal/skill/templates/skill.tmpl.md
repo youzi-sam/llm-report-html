@@ -7,6 +7,11 @@ description: This skill should be used when the user wants a self-contained HTML
 
 Render typed JSON to a self-contained, optionally interactive HTML report.
 
+Rendered reports include:
+- an automatic TOC from rendered `h2`-`h4` headings when there are at least two headings,
+- a small top-right `JSON` disclosure that formats the embedded source JSON on demand,
+- precompiled code highlighting for recognized `code.lang` values, without browser highlighter JS.
+
 ## When to invoke
 
 Trigger on any request matching: briefing / executive summary / KPI dashboard / status report / comparison / pros-cons / how-to tutorial / FAQ / glossary / calculator / unit converter / interest or tax tool / filtered list / search UI. **Do not** use for plain Markdown, multi-page sites, or web apps with networking.
@@ -78,6 +83,10 @@ Each line: name — when to pick → minimal field shape. For full per-surface e
 {{ range .Layouts -}}
 - `{{ .Name }}` — {{ .Usage }} → `{type:"{{ .Name }}"{{ range .Fields }}, {{ . }}{{ end }}}`
 {{ end }}
+
+Notes:
+- `heading` sections automatically feed the TOC; use real heading hierarchy instead of fake bold paragraphs.
+- `code.lang` is highlighted at render time when the language is recognized. Unknown languages render as escaped plain code.
 
 ## Reactive cells (optional, for interactivity)
 

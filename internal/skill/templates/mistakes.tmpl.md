@@ -21,6 +21,8 @@ llm-report-html extract out.html -o doc.json
 ```
 This pulls only the source JSON slot — runtime packs stay unread.
 
+The rendered HTML also has a small top-right `JSON` disclosure for browser viewing. That is for human inspection, not for agent editing.
+
 ### Editing the rendered HTML directly
 
 Don't try to "patch" a string in the .html. Always `extract → edit JSON → render`.
@@ -69,6 +71,14 @@ Unsupported diagram grammars (Sankey, C4, class diagrams, etc.) are unsupported 
 ### Diagram typography
 
 Do not add per-report font-size fields or fake small text by inserting extra line breaks. Diagram typography is renderer-owned through `--diagram-font-size`, `--diagram-font-size-small`, and `--diagram-label-line-height`; structured JSON owns only semantic content.
+
+### Fake headings
+
+Do not use bold paragraphs as section titles. Use `heading`; the rendered report builds its TOC from real `h2`-`h4` headings.
+
+### Code highlighting expectations
+
+Use `code.lang` for recognized languages (`go`, `javascript`, `typescript`, `python`, `json`, etc.). Unknown languages render as escaped plain code; do not fake highlighting with inline HTML.
 
 ## Semantic validation errors
 

@@ -9,7 +9,7 @@ report.json (Agent writes)  →  llm-report-html render  →  report.html
                                                           (single file, feature-pruned)
 ```
 
-Reports are deliverables: open in a browser, attach to email, paste in chat. Optional reactive cells make them interactive without writing JS.
+Reports are deliverables: open in a browser, attach to email, paste in chat. Optional reactive cells make them interactive without writing JS. Rendered reports include a generated TOC, a small top-right source-JSON disclosure, and precompiled code highlighting when `code.lang` is recognized.
 
 ---
 
@@ -77,7 +77,7 @@ schema validation failed:
 
 ## Architecture in one paragraph
 
-The Go renderer validates source JSON, derives report features, precompiles Markdown into render-only HTML, and then inlines only the runtime packs required by that feature set. The browser dispatcher renders each section by `type` to either a content surface (leaf, e.g., `paragraph`, `table`, `diagram`) or a layout container (e.g., `tabs`, `details`). Reactivity is present only when bindings or inputs require it. `diagram` is structured JSON rendered by first-class SVG backends; diagram runtime is selected by backend family so dagre-backed kinds share one pack instead of duplicating layout code. The original JSON remains in the `report-data` slot for `extract`; derived render data lives separately in `report-render-data`.
+The Go renderer validates source JSON, derives report features, precompiles Markdown and code highlighting into render-only HTML, and then inlines only the runtime packs/CSS required by that feature set. The browser dispatcher renders each section by `type` to either a content surface (leaf, e.g., `paragraph`, `table`, `diagram`) or a layout container (e.g., `tabs`, `details`). Reactivity is present only when bindings or inputs require it. `diagram` is structured JSON rendered by first-class SVG backends; diagram runtime is selected by backend family so dagre-backed kinds share one pack instead of duplicating layout code. The original JSON remains in the `report-data` slot for `extract` and for the first-screen JSON disclosure; derived render data lives separately in `report-render-data`. TOC is generated from rendered `h2`-`h4` headings.
 
 ---
 
