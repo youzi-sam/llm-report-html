@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strings"
 
 	"github.com/yansir/llm-report-html/internal/schema"
 )
@@ -139,6 +140,11 @@ func Lint(raw []byte) ([]Warning, error) {
 			if len(subs) == 0 {
 				ws = append(ws, Warning{path + ".sections", "empty-container",
 					fmt.Sprintf("%s has no nested sections", t)})
+			}
+		case "callout":
+			if txt, _ := s["text"].(string); strings.TrimSpace(txt) == "" {
+				ws = append(ws, Warning{path + ".text", "empty-callout",
+					"callout has no body text — use heading if you only want a colored label, or move sibling content into text as markdown"})
 			}
 		}
 

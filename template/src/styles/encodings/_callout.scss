@@ -12,7 +12,7 @@
   &-title {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     padding: 8px 12px;
     font-size: $fs-small;
     font-weight: 600;
@@ -21,14 +21,12 @@
     background: var(--md-surface);
 
     &::before {
-      content: "!";
-      @include code-font;
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 3px;
-      background: var(--md-hover);
-      color: var(--md-slate-700);
-      font-weight: 700;
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--md-slate-400);
+      flex-shrink: 0;
     }
   }
 
@@ -43,14 +41,14 @@
   }
 
   &.info .callout-title { background: var(--md-pond-50); border-bottom-color: rgba(0, 85, 255, 0.1); }
-  &.info .callout-title::before { content: "INFO"; background: var(--md-pond); color: #fff; }
-  
+  &.info .callout-title::before { background: var(--md-pond); }
+
   &.warn .callout-title { background: var(--md-warning-50); border-bottom-color: rgba(148, 98, 0, 0.1); }
-  &.warn .callout-title::before { content: "WARN"; background: var(--md-warning); color: #fff; }
-  
+  &.warn .callout-title::before { background: var(--md-warning); }
+
   &.danger .callout-title { background: var(--md-danger-50); border-bottom-color: rgba(199, 51, 47, 0.1); }
-  &.danger .callout-title::before { content: "ERR"; background: var(--md-danger); color: #fff; }
-  
+  &.danger .callout-title::before { background: var(--md-danger); }
+
   &.success .callout-title { background: var(--md-success-50); border-bottom-color: rgba(0, 136, 68, 0.1); }
-  &.success .callout-title::before { content: "OK"; background: var(--md-success); color: #fff; }
+  &.success .callout-title::before { background: var(--md-success); }
 }

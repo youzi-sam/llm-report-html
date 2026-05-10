@@ -55,6 +55,8 @@ If your final draft uses fewer than 5 surface types, you didn't compress — go 
 ```bash
 llm-report-html validate my.json     # strict schema + lint warnings
 llm-report-html render   my.json -o my.html
+# After render succeeds, return ONLY the path. Do NOT run `open`,
+# `xdg-open`, or any browser launcher — the harness opens it for you.
 ```
 
 If the report contains a `mermaid` section, **pre-flight the diagram source** before placing it into JSON — schema cannot parse mermaid syntax, and crashes only surface at browser render time:

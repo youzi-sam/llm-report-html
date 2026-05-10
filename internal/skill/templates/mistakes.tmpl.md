@@ -37,6 +37,24 @@ This tool deliberately bounds expressiveness:
 
 If those don't suffice, the request likely doesn't fit this tool — it wants a different deliverable.
 
+### Empty-text callout used as a colored section heading
+
+`callout` is a **labeled boxed message**. Its body lives in the `text` field (markdown — bullet lists, paragraphs, bold, etc. all work inside). It is NOT a "colored heading widget".
+
+Anti-pattern (passes validation but renders visually broken — content escapes the callout box):
+
+```json
+{"type": "callout", "kind": "success", "title": "功绩", "text": ""},
+{"type": "list",    "items": [...]}
+```
+
+The sibling `list` renders **outside** the callout's bordered container — orphaned bullets below an empty colored bar.
+
+Correct patterns:
+- Put bullets inside the callout's `text` as markdown: `"text": "- item 1\n- item 2\n- item 3"`.
+- For a "pros vs cons" comparison, use `columns` of two callouts, each with bullets in its own `text`.
+- If you only want a tinted section header without a body, use a normal `heading` — don't co-opt callout.
+
 ### Mermaid: validate before committing to JSON
 
 Schema can only assert that `code` is a non-empty string — it cannot parse mermaid syntax. A diagram with nested unescaped `"` inside `["..."]` node labels, unclosed brackets, or other syntax errors **passes `validate` but breaks at browser render time** (you'll see `<div class="report-error">` instead of the diagram).
@@ -68,3 +86,4 @@ Lint is run as part of `validate`; pass `--strict` to make warnings fatal.
 - **cycle** — computed cell A depends on B which depends on A (renderer can't break the loop)
 - **trivial-layout** — `tabs` or `columns` with only 1 item; you probably want a different surface
 - **empty-container** — `details` or `aside` with no nested sections
+- **empty-callout** — `callout` with empty `text`; almost always means content was placed as a sibling and escapes the box (see "Empty-text callout" above)

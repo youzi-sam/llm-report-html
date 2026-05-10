@@ -1,8 +1,8 @@
 @use '../tokens' as *;
 @use '../mixins' as *;
 
-// Strip the outer rounded frame and vertical separators. Tables read like
-// financial statements: only horizontal rules, header in lighter monospace.
+// Borderless table: only the header carries an underline. Body rows are
+// separated by padding alone; hover gives a soft tint for scan tracking.
 table {
   width: 100%;
   border-collapse: collapse;
@@ -13,7 +13,6 @@ table {
 th, td {
   padding: 10px 14px;
   text-align: left;
-  border-bottom: $bw solid var(--md-slate-200);
   vertical-align: top;
 }
 
@@ -25,8 +24,7 @@ th {
   text-transform: uppercase;
   color: var(--md-slate-500);
   background: transparent;
-  border-bottom: $bw solid var(--md-slate-300);
+  border-bottom: $bw solid var(--md-slate-200);
 }
 
-tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover         { background: var(--md-hover); }
+tbody tr:hover { background: var(--md-hover); }

@@ -261,10 +261,12 @@ const layouts = {
   accordion: s => {
     const d = el('details', s.open ? { open: '' } : {}, [])
     d.appendChild(el('summary', {}, [text(s.summary || 'Details')]))
+    const body = el('div', { class: 'report-body' }, [])
     for (const child of s.sections || []) {
       const c = renderSection(child)
-      if (c) d.appendChild(c)
+      if (c) body.appendChild(c)
     }
+    d.appendChild(body)
     return d
   },
 
@@ -310,11 +312,13 @@ const layouts = {
 
   aside: s => {
     const a = el('aside', { class: 'report-aside' }, [])
-    if (s.title) a.appendChild(el('div', { class: 'report-aside-title' }, [text(s.title)]))
+    const body = el('div', { class: 'report-body' }, [])
+    if (s.title) body.appendChild(el('div', { class: 'report-aside-title' }, [text(s.title)]))
     for (const child of s.sections || []) {
       const c = renderSection(child)
-      if (c) a.appendChild(c)
+      if (c) body.appendChild(c)
     }
+    a.appendChild(body)
     return a
   },
 }

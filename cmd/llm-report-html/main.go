@@ -7,7 +7,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
+	"time"
 
 	htmlrender "github.com/yansir/llm-report-html/internal/render/html"
 	mdrender "github.com/yansir/llm-report-html/internal/render/markdown"
@@ -54,8 +58,11 @@ USAGE
   llm-report-html <command> [args]
 
 COMMANDS
-  render   <doc.json> [--target html|md|json] [-o out]
-                                       html (default), md (markdown), json (echo)
+  render   <doc.json> [--target html|md|json] [-o out] [--stdout] [--no-open]
+                                       html (default): writes to /tmp + sibling
+                                       .json source, then opens in the browser.
+                                       md/json: prints to stdout (use -o for file).
+                                       --stdout: pipe any target to stdout.
   validate <doc.json> [--strict]      schema validation + lint warnings
   extract  <report.html> [-o doc.json]
                                        pull JSON source out of a rendered HTML
@@ -67,7 +74,9 @@ COMMANDS
   version  | -v | --version
   help     | -h | --help               this message
 
-  Stdin/stdout work on render/validate/extract when path is omitted.
+  Stdin works on render/validate/extract when path is omitted.
+  Sibling .json next to the rendered .html is the canonical source — edit it
+  and re-render rather than hand-editing the HTML.
 
 AGENT GUIDE
   This binary is the engine; the skill is the interface. After build:
@@ -89,6 +98,8 @@ func exit(err error) {
 func cmdRender(args []string) error {
 	target := "html"
 	var inPath, outPath string
+	stdout := false
+	noOpen := false
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		switch {
@@ -104,6 +115,10 @@ func cmdRender(args []string) error {
 			}
 			outPath = args[i+1]
 			i++
+		case a == "--stdout":
+			stdout = true
+		case a == "--no-open":
+			noOpen = true
 		case strings.HasPrefix(a, "-"):
 			return fmt.Errorf("unknown flag: %s", a)
 		default:
@@ -138,7 +153,74 @@ func cmdRender(args []string) error {
 		return fmt.Errorf("unknown target %q (try: html, md, json)", target)
 	}
 
-	return writeOutput(outPath, out)
+	// --stdout forces piping; -o is an explicit path.
+	// Otherwise: html → /tmp + sibling JSON + open; md/json → stdout.
+	if stdout {
+		_, err := os.Stdout.WriteString(out)
+		return err
+	}
+	if target != "html" && outPath == "" {
+		_, err := os.Stdout.WriteString(out)
+		return err
+	}
+
+	htmlPath := outPath
+	if htmlPath == "" {
+		htmlPath = deriveTmpPath(inPath, ".html")
+	}
+	if err := os.WriteFile(htmlPath, []byte(out), 0644); err != nil {
+		return err
+	}
+	fmt.Fprintf(os.Stderr, "wrote %s\n", htmlPath)
+
+	// Sibling JSON: source-of-truth for re-render. The HTML embeds it too,
+	// but a plain file is friendlier for an Agent's next edit pass.
+	if target == "html" {
+		jsonPath := strings.TrimSuffix(htmlPath, filepath.Ext(htmlPath)) + ".json"
+		var pretty bytes.Buffer
+		if err := json.Indent(&pretty, raw, "", "  "); err != nil {
+			return fmt.Errorf("re-format source json: %w", err)
+		}
+		pretty.WriteByte('\n')
+		if err := os.WriteFile(jsonPath, pretty.Bytes(), 0644); err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stderr, "wrote %s (source — edit and re-render)\n", jsonPath)
+	}
+
+	if target == "html" && !noOpen {
+		if err := openInBrowser(htmlPath); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not open in browser: %v\n", err)
+		}
+	}
+	return nil
+}
+
+func deriveTmpPath(inPath, ext string) string {
+	base := "llm-report"
+	if inPath != "" {
+		stem := strings.TrimSuffix(filepath.Base(inPath), filepath.Ext(inPath))
+		if stem != "" {
+			base = stem
+		}
+	}
+	ts := time.Now().Format("150405")
+	return filepath.Join("/tmp", fmt.Sprintf("%s-%s%s", base, ts, ext))
+}
+
+func openInBrowser(path string) error {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "darwin":
+		cmd = exec.Command("open", path)
+	case "linux":
+		cmd = exec.Command("xdg-open", path)
+	case "windows":
+		cmd = exec.Command("cmd", "/c", "start", "", path)
+	default:
+		return nil
+	}
+	return cmd.Start()
 }
 
 func cmdValidate(args []string) error {

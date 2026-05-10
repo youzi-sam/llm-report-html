@@ -1,11 +1,11 @@
 @use '../tokens' as *;
 @use '../mixins' as *;
 
+// Padding lives on the inner .report-body wrapper (see _base.scss).
 .report-aside {
   background: var(--md-surface);
   border: $bw solid var(--md-slate-200);
   border-radius: $r-sm;
-  padding: 12px;
   margin-bottom: $sp-5;
 
   &-title {

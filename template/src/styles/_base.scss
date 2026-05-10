@@ -30,3 +30,14 @@ a {
   &:hover { text-decoration: underline; }
   &:focus-visible { @include focus-ring; }
 }
+
+// Shared body wrapper for surface containers (details, aside, …). Padding
+// frames the interior; first/last child margins reset so the natural
+// surface-level margins (p / table / blockquote / ul) drive inter-element
+// spacing without doubling up at the boundary or escaping via collapse.
+.report-body {
+  padding: 14px 18px;
+
+  > :first-child { margin-top: 0; }
+  > :last-child  { margin-bottom: 0; }
+}

@@ -9,41 +9,43 @@ details {
   overflow: hidden;
 }
 
+details[open] {
+  background: var(--md-paper);
+
+  summary {
+    border-bottom: $bw solid var(--md-slate-200);
+
+    &::after { transform: rotate(135deg); }
+  }
+}
+
 summary {
   @include code-font;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  padding: 8px 12px;
+  padding: 8px 14px;
   list-style: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 
   &:hover { background: var(--md-hover); }
 
   &::-webkit-details-marker { display: none; }
 
+  // Outline chevron via border-top + border-right of an empty square,
+  // rotated. Closed: points right. Open: points down.
   &::after {
-    content: '▼';
-    font-size: 9px;
-    color: var(--md-slate-500);
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-top: 1px solid currentColor;
+    border-right: 1px solid currentColor;
+    transform: rotate(45deg);
     transition: transform 0.2s;
+    opacity: 0.5;
+    flex-shrink: 0;
   }
-}
-
-details[open] {
-  summary {
-    border-bottom: $bw solid var(--md-slate-200);
-    background: var(--md-paper);
-
-    &::after { transform: rotate(180deg); }
-  }
-}
-
-details > *:not(summary) {
-  padding: 12px;
-  margin: 0;
-  background: var(--md-paper);
-  font-size: $fs-small;
 }

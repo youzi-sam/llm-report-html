@@ -1,23 +1,20 @@
 @use '../tokens' as *;
 @use '../mixins' as *;
 
-// No outer card frame, no vertical divider, no left-cell background.
-// Lean entirely on the type contrast (uppercase mono dt vs body dd) and a
-// fixed left column to align — like a Stripe pricing-row.
+// No frames, no per-row rules. Type contrast (uppercase mono dt vs body dd)
+// + a fixed left column do all the alignment work; padding alone separates
+// rows.
 .report-dl {
   display: grid;
   grid-template-columns: minmax(140px, max-content) 1fr;
   margin-bottom: $sp-5;
 
   dt, dd {
-    padding: 10px 0;
+    padding: 8px 0;
     margin: 0;
-    border-bottom: $bw solid var(--md-slate-200);
     font-size: $fs-small;
     line-height: 1.55;
   }
-
-  dt:last-of-type, dd:last-of-type { border-bottom: none; }
 
   dt {
     @include code-font;

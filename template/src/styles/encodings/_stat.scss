@@ -1,17 +1,17 @@
 @use '../tokens' as *;
 @use '../mixins' as *;
 
-// Border drops; the surface tint alone defines the card. Label and value
-// pull together (gap 2px, line-height 1.15) so the number lands tightly
-// under its caption — chunked KPI feel.
+// Subtle surface tint defines the card. Stacked label/value with a tight
+// gap. Best inside a `columns` or grid layout (KPI grid); standalone use is
+// fine but will read as a single soft block.
 .stat-card {
   background: var(--md-surface);
   border-radius: $r-sm;
-  padding: $sp-3 $sp-4 $sp-3 - 2px;
-  margin: $sp-3 0;
+  padding: 10px 14px;
+  margin: $sp-2 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 
   .stat-label {
     @include code-font;

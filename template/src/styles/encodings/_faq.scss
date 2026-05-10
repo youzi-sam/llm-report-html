@@ -33,11 +33,18 @@
     justify-content: space-between;
 
     &::-webkit-details-marker { display: none; }
+    // Outline chevron (border-top + border-right rotated). Closed: points
+    // right. Open: rotates to point down.
     &::after {
-      content: '▼';
-      font-size: 9px;
-      color: var(--md-slate-400);
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-top: 1px solid currentColor;
+      border-right: 1px solid currentColor;
+      transform: rotate(45deg);
+      opacity: 0.5;
       transition: transform 0.2s;
+      flex-shrink: 0;
     }
 
     &:hover { color: var(--md-ink); }
@@ -49,7 +56,7 @@
     summary {
       color: var(--md-ink);
 
-      &::after { transform: rotate(180deg); }
+      &::after { transform: rotate(135deg); }
     }
 
     > *:not(summary) {
