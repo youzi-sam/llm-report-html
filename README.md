@@ -39,18 +39,17 @@ Requires Go ≥ 1.22 and Node ≥ 18.
 ## Quick start (humans)
 
 ```bash
-llm-report-html recipe list                       # browse 7 starter templates
-llm-report-html recipe show calculator > my.json  # copy & edit
+llm-report-html recipe list                       # browse 2 technique case studies
+llm-report-html recipe show calculator > my.json  # inspect or adapt
 llm-report-html validate my.json
-llm-report-html render   my.json -o my.html
-open my.html
+llm-report-html render   my.json -o my.html       # opens by default
 ```
 
 Modify an existing report:
 ```bash
 llm-report-html extract  out.html -o doc.json
 # edit doc.json
-llm-report-html render   doc.json -o out.html
+llm-report-html render   doc.json -o out.html     # add --no-open for headless runs
 ```
 
 Full CLI: `llm-report-html -h`. Agent guide: `.claude/skills/llm-report-html/SKILL.md`.
@@ -59,7 +58,7 @@ Full CLI: `llm-report-html -h`. Agent guide: `.claude/skills/llm-report-html/SKI
 
 ## Single source of truth
 
-The schema (`internal/schema/schema.json`) is the canonical contract. Validators, renderer dispatch, type bindings, and the entire skill folder all derive from it.
+The manifest (`internal/schema/manifest.json`) is the canonical contract source. It generates `internal/schema/schema.json`; validators, renderer dispatch metadata, type bindings, and the entire skill folder derive from the generated schema.
 
 ```bash
 llm-report-html schema --json | npx -y json-schema-to-typescript > types.d.ts
@@ -72,7 +71,7 @@ schema validation failed:
   /sections/3/level: must be <= 4 but found 7
 ```
 
-`make skill` regenerates SKILL.md and `references/*.md` from the schema. Generated files are gitignored — every clone reproduces them deterministically.
+`make` regenerates schema, renderer catalog, SKILL.md, and `references/*.md`. Generated skill files are gitignored — every clone reproduces them deterministically.
 
 ---
 
@@ -94,13 +93,13 @@ The renderer dispatches each section by `type` to either a content surface (leaf
 
 cmd/llm-report-html/                  CLI entry (Go)
 internal/
-├── schema/schema.json                 canonical schema (single source of truth)
+├── schema/manifest.json               canonical report contract source
+├── schema/schema.json                 generated JSON Schema
 ├── schema/                            Go validator + helpers
 ├── skill/                             skill-gen package + templates
 ├── render/html/                       Vite-built singlefile bundle, embedded by Go
-├── render/markdown/                   Markdown renderer (proves schema decoupling)
-└── lint/                              Static analysis warnings
-recipes/*.json                         vetted starter templates (Go-embedded)
+└── lint/                              Semantic validation + presentation warnings
+recipes/*.json                         vetted technique case studies (Go-embedded)
 template/                              Vite source for the HTML renderer
 examples/                              dev fixtures
 ```
@@ -113,9 +112,9 @@ Contributor guide: `CLAUDE.md`.
 
 - **Data is the only input surface.** Agents and humans write JSON. They never write HTML, CSS, or JS.
 - **HTML is the only deliverable.** Single-file, no network, no toolchain at consumption time.
-- **Schema is the contract.** All derived artifacts (validators, dispatch, types, skill, docs) generate from `schema.json`.
-- **Bounded expressiveness.** 19 surfaces, 8 JSONLogic operators, no escape hatch to arbitrary code.
-- **Two renderers.** HTML for delivery, Markdown for graceful degradation — and as a forcing function so coupling stays out of the schema.
+- **Manifest is the contract source.** All derived artifacts (schema, validators, dispatch metadata, types, skill, docs) generate from `manifest.json`.
+- **Bounded expressiveness.** 20 surfaces, 8 JSONLogic operators, no escape hatch to arbitrary code.
+- **Single renderer.** HTML is the only deliverable. Unsupported targets fail.
 
 ---
 

@@ -2,7 +2,7 @@
 // Each operator collapses what would be 5-15 lines of nested logic into
 // a single high-level call.
 //
-// Adding a new operator: register here + add metadata in schema/v2.json
+// Adding a new operator: register here + add metadata in schema.json
 // under x-jsonlogic-operators (so `llm-report-html schema --operators` lists it).
 
 export function registerOperators(jsonLogic) {

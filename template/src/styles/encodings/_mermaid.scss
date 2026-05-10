@@ -3,13 +3,24 @@
 .mermaid-block {
   margin: $sp-5 0;
   text-align: center;
-  border: $bw solid var(--md-slate-200);
+  border: $bw solid var(--diagram-border);
   border-radius: $r-sm;
-  background: var(--md-paper);
-  padding: 12px;
+  background: var(--diagram-canvas);
+  overflow-x: auto;
+  padding: $sp-5;
 
   svg {
     max-width: 100%;
+    width: auto;
     height: auto;
+    display: block;
+    margin: 0 auto;
+    background: transparent !important;
+  }
+}
+
+@media (max-width: $bp-narrow) {
+  .mermaid-block {
+    padding: $sp-3;
   }
 }

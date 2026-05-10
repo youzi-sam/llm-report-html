@@ -2,6 +2,7 @@
 bin/
 template/dist/
 template/node_modules/
+template/src/generated/
 
 # ─── per-developer .claude/ state (NOT part of the deliverable) ────
 # Only .claude/skills/llm-report-html/ is committed. Everything else
@@ -23,10 +24,8 @@ template/node_modules/
 # ─── runtime / agent-generated reports at project root ─────────────
 /cf.html
 /cf.json
-/cf.md
 /report.html
 /report.json
-/report.md
 
 # generic .html (cf.html, tax-vibe.html, mockup.html, …)
 # allow only the template entry/dist

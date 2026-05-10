@@ -8,19 +8,20 @@ For Agent usage, read `.claude/skills/llm-report-html/SKILL.md` (regenerate with
 
 | Fact | Canonical home | Generators |
 |---|---|---|
-| Surface catalog | `internal/schema/schema.json` `x-surface-catalog` + `$defs/section.<type>` | skill, CLI `schema --catalog` |
+| Surface catalog + per-surface schema | `internal/schema/manifest.json` `surfaces` | `schema.json`, skill, CLI `schema --catalog`, generated HTML runtime catalog |
 | Operator implementations | `template/src/operators.js` | — |
-| Operator metadata | `internal/schema/schema.json` `x-jsonlogic-operators` | skill, CLI `schema --operators` |
-| Mistake catalog | `internal/schema/schema.json` `x-presentation-notes` | skill `mistakes.md` |
+| Operator metadata | `internal/schema/manifest.json` `operators` | `schema.json`, skill, CLI `schema --operators` |
+| Mistake catalog | `internal/schema/manifest.json` `presentationNotes` | `schema.json`, skill `mistakes.md` |
 | Recipes | `recipes/*.json` (Go embed) | skill `assets/recipes/` (mirrored on `make skill`) |
 | Skill framing / workflow | `internal/skill/templates/*.tmpl.md` | skill files |
 
-Touch the canonical home, run `make skill`, all derived docs update.
+Touch the canonical home, run `make`, all derived artifacts update.
 
 ## Build
 
 ```bash
-make             # build binary + populate skill folder
+make             # generate schema, build binary, populate skill folder
+make schema      # regenerate internal/schema/schema.json from manifest
 make skill       # only regenerate skill (after schema or template edits)
 make test        # validate every recipe
 make clean       # remove bin/ + generated skill artifacts
@@ -28,15 +29,14 @@ make clean       # remove bin/ + generated skill artifacts
 
 ## When modifying the schema
 
-1. Edit `internal/schema/schema.json`
-2. Run `make` to rebuild binary AND regenerate skill
+1. Edit `internal/schema/manifest.json`
+2. Run `make` to regenerate schema, rebuild binary, and regenerate skill
 3. Run `make test` to confirm all recipes still validate
-4. Manually verify lint warnings on representative recipes
+4. Run tests; semantic validation failures must block render
 
 ## When modifying the renderer
 
-- HTML: `template/src/main.js` + `template/src/styles/`. Run `cd template && npx vite build`, then `make` to re-embed.
-- Markdown: `internal/render/markdown/`. Both renderers must handle every surface — markdown degrades gracefully when needed (tabs → linear sections; array bindings → placeholder).
+- HTML: `template/src/main.js` + `template/src/styles/`. Run `make` to regenerate the schema-derived runtime catalog, build Vite, and re-embed.
 
 ## When adding a recipe
 
@@ -47,16 +47,15 @@ make clean       # remove bin/ + generated skill artifacts
 ## When adding a JSONLogic operator
 
 1. Implement in `template/src/operators.js`
-2. Add metadata entry in `internal/schema/schema.json` `x-jsonlogic-operators` (the generator + CLI consume this)
+2. Add metadata entry in `internal/schema/manifest.json` `operators` (schema + CLI consume this)
 3. `make` to rebuild
 
 ## When adding a surface type
 
 A bigger change. Touch:
-- `internal/schema/schema.json`: add `$defs/section.<type>` with strict fields + add to `x-surface-catalog`
+- `internal/schema/manifest.json`: add one `surfaces.<type>` entry with strict fields and metadata
 - `template/src/main.js`: add encoding or layout dispatch
-- `internal/render/markdown/markdown.go`: add the same handling
 - `template/src/styles/encodings/_<type>.scss` (or `layouts/`): visual treatment
 - `make` to rebuild and regenerate skill
 
-The strict schema validator catches most mistakes; lint catches semantic ones.
+Schema validation catches shape errors. Semantic validation catches broken references and blocks render.

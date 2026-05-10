@@ -53,13 +53,6 @@ JSONLogic's scoped operators (`map`, `filter`, `reduce`, `all`, `some`, `none`) 
 }
 ```
 
-## Markdown degradation
-
-When you render with `--target md`, reactive cells degrade gracefully:
-- Templated text fields substitute state defaults; computed cells render as `<name>` placeholders.
-- Array bindings become empty (markdown is static).
-- `if` evaluates against state defaults; uncertain → show.
-
 ## Composition limits (by design)
 
 - No async / network / fetch

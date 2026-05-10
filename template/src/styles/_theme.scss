@@ -37,6 +37,24 @@
   
   --callout-bg: var(--md-paper);
   --callout-border: var(--md-slate-200);
+
+  // Diagram tokens consumed by both CSS and Mermaid's JS theme config.
+  --diagram-canvas: #f6f6f3;
+  --diagram-surface: #ffffff;
+  --diagram-surface-soft: #f1f1ee;
+  --diagram-ink: #111111;
+  --diagram-border: #c7c7c2;
+  --diagram-border-strong: #8f8f89;
+  --diagram-root-fill: #202020;
+  --diagram-root-stroke: #202020;
+  --diagram-root-text: #ffffff;
+  --diagram-accent-fill: #eef4ff;
+  --diagram-accent-stroke: #7d9fcb;
+  --diagram-accent-text: #142033;
+  --diagram-success-fill: #eef7ef;
+  --diagram-success-stroke: #86aa86;
+  --diagram-success-text: #172817;
+  --diagram-line: #777775;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -61,5 +79,22 @@
     --md-success-50: rgba(0, 136, 68, 0.1);
     --md-warning-50: rgba(148, 98, 0, 0.1);
     --md-danger-50: rgba(199, 51, 47, 0.1);
+
+    --diagram-canvas: #151515;
+    --diagram-surface: #202020;
+    --diagram-surface-soft: #181818;
+    --diagram-ink: #f5f5f5;
+    --diagram-border: #525252;
+    --diagram-border-strong: #8a8a8a;
+    --diagram-root-fill: #f5f5f5;
+    --diagram-root-stroke: #f5f5f5;
+    --diagram-root-text: #111111;
+    --diagram-accent-fill: #11233a;
+    --diagram-accent-stroke: #5f8fcb;
+    --diagram-accent-text: #f5f9ff;
+    --diagram-success-fill: #14261b;
+    --diagram-success-stroke: #6fa37a;
+    --diagram-success-text: #f4fff6;
+    --diagram-line: #8a8a8a;
   }
 }

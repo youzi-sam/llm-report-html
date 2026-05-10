@@ -1,6 +1,6 @@
 # Surfaces
 
-This document is generated from `schema.json`'s `x-surface-catalog` and per-section `$defs`. {{ .SurfaceCount }} surface types total.
+This document is generated from the report manifest via `schema.json`'s `x-surface-catalog` and per-section `$defs`. {{ .SurfaceCount }} surface types total.
 
 ## Picking a surface
 
@@ -16,7 +16,7 @@ This document is generated from `schema.json`'s `x-surface-catalog` and per-sect
 | Fold-out detail | `details` |
 | Side margin note | `aside` |
 | Single big number | `stat` (can bind to a cell) |
-| Diagram (flow / sequence / state / mindmap) | `mermaid` |
+| Diagram (flow / sequence / state / mindmap) | `diagram`; use `mermaid` only for unsupported diagram kinds |
 | Image | `image` (src must be `https://…` or `data:…`) |
 | Code block | `code` |
 | Time-anchored events | `timeline` |
@@ -43,7 +43,7 @@ These are the patterns that turn reports into walls of `heading + paragraph`. Ea
 | Time-anchored events / version history / project milestones | `timeline` | Visually conveys ordering + spacing better than a numbered list. |
 | Tabular data | `table` | But if the table is "name + one-line description" without other columns, use `definition` instead. |
 
-A 1500-word report with **only `heading` + `paragraph` + 1 callout** uses 2 of the 19 surfaces. That's a smell. Aim for 6+ different types in any non-trivial report.
+A 1500-word report with **only `heading` + `paragraph` + 1 callout** uses 2 of the {{ .SurfaceCount }} surfaces. That's a smell. Aim for 6+ different types in any non-trivial report.
 
 ## Content surfaces (leaf)
 {{ range .Encodings }}

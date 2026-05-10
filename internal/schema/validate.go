@@ -35,7 +35,7 @@ func init() {
 }
 
 // ParseAndValidate accepts raw JSON, parses to interface{}, runs strict
-// JSON Schema 2020-12 validation against the embedded v2.json, then converts
+// JSON Schema 2020-12 validation against the embedded schema.json, then converts
 // to Document for downstream renderers.
 func ParseAndValidate(raw []byte) (*Document, error) {
 	var v interface{}

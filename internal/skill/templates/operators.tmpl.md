@@ -2,7 +2,7 @@
 
 Use these instead of nested if/else. Each operator collapses many lines of conditional logic into a single high-level call.
 
-These operators are curated for common Agent intents. They register in `template/src/operators.js` and are documented (with metadata) in `internal/schema/schema.json` `x-jsonlogic-operators`.
+These operators are curated for common Agent intents. They register in `template/src/operators.js` and are documented in `internal/schema/manifest.json` `operators`.
 
 ## Catalog
 {{ range .Operators }}

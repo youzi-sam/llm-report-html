@@ -1,6 +1,6 @@
 # Type bindings
 
-The schema is the single source of truth. External code that consumes this format should generate types from it, not transcribe by hand.
+The CLI exposes the generated machine-readable schema. External code that consumes this format should generate types from it, not transcribe by hand.
 
 ## TypeScript
 

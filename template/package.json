@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prebuild": "node scripts/generate-catalog.mjs",
     "build": "vite build"
   },
   "devDependencies": {

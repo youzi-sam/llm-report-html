@@ -1,0 +1,2306 @@
+{
+  "$schema": "https://yansir.dev/llm-report-html/schema-manifest/v1",
+  "schema": {
+    "title": "Report Document",
+    "version": "1.0.0",
+    "description": "Typed JSON document for LLM-authored reports. Generated from manifest.json for Go validators, JS dispatch metadata, and downstream type bindings."
+  },
+  "presentationNotes": {
+    "mermaid_node_labels": "Node labels with line breaks MUST be wrapped in double quotes and use `<br/>`. Bare `\\n` is rendered as two literal characters by mermaid v11. Correct: `A[\"line 1<br/>line 2\"]`. Wrong: `A[line 1\\nline 2]`. Applies to every node shape (`[]`, `()`, `{}`, `(())`, `[[]]`, `[()]`).",
+    "image_src_constraint": "`image.src` must be `https://…` or `data:…` URI. Local paths (`file://`, `/var/...`, etc.) break the single-file deliverable promise — the rendered HTML must remain self-contained even after being moved or shared.",
+    "markdown_in_text_fields": "Inline markdown (bold, italic, links) is supported in: `paragraph.text`, `callout.text`, `quote.text`, `list` items, `table` cells, `definition.def`, `faq.a`. Block-level markdown (headings, lists) inside these fields is NOT supported — use the dedicated surface for those.",
+    "additional_properties_rejected": "Every section schema is `additionalProperties: false`. Adding fields not declared in `$defs/section.<type>` fails validation. Don't try to smuggle metadata via undeclared keys; if a field is missing, file a real schema change.",
+    "section_if_visibility": "Any section may include `if`: a boolean literal or `{\"$bind\":\"cell\"}`. When false, HTML hides the section; Markdown skips it. The bound cell can be `state` or `computed`.",
+    "diagram_over_mermaid": "For flowcharts and sequence diagrams, prefer `diagram` (with `kind: flow` or `kind: sequence`) over raw `mermaid`. The `diagram` surface accepts structured fields (nodes/edges/actors/messages) and the renderer generates correct mermaid syntax — no escaping or DSL traps. Use `mermaid` only when `diagram` cannot express the picture (subgraphs, custom shapes, Sankey, C4, ER, class diagrams)."
+  },
+  "surfaces": {
+    "heading": {
+      "kind": "encoding",
+      "binds": "heading",
+      "fields": [
+        "level",
+        "text"
+      ],
+      "usage": "章节标题（h1-h4）",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "text": {
+            "type": "string"
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "level": 2,
+          "text": "概述"
+        }
+      ]
+    },
+    "paragraph": {
+      "kind": "encoding",
+      "binds": "paragraph",
+      "fields": [
+        "text"
+      ],
+      "usage": "散文段落，body 支持 inline markdown",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "text": "**Cloudflare** 成立于 2009 年，总部位于旧金山。"
+        }
+      ]
+    },
+    "quote": {
+      "kind": "encoding",
+      "binds": "quote",
+      "fields": [
+        "text",
+        "by"
+      ],
+      "usage": "引用 + 可选作者",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "by": {
+            "type": "string"
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "text": "Premature optimization is the root of all evil.",
+          "by": "Donald Knuth"
+        }
+      ]
+    },
+    "code": {
+      "kind": "encoding",
+      "binds": "code",
+      "fields": [
+        "lang",
+        "code"
+      ],
+      "usage": "代码块，带 lang 字段",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "lang": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "lang": "javascript",
+          "code": "console.log('hello')"
+        }
+      ]
+    },
+    "hr": {
+      "kind": "encoding",
+      "binds": "divider",
+      "fields": [],
+      "usage": "水平分隔线",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {}
+      ]
+    },
+    "list": {
+      "kind": "encoding",
+      "binds": "list",
+      "fields": [
+        "ordered",
+        "items"
+      ],
+      "usage": "项目符号 / 编号列表，items 可嵌套",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "ordered": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          },
+          "items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/list.item"
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "ordered": false,
+          "items": [
+            "第一项",
+            "第二项",
+            {
+              "text": "嵌套项",
+              "children": [
+                "子 A",
+                "子 B"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "table": {
+      "kind": "encoding",
+      "binds": "table",
+      "fields": [
+        "columns",
+        "rows"
+      ],
+      "usage": "表格（columns + rows）",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "columns",
+          "rows"
+        ],
+        "properties": {
+          "columns": {
+            "anyOf": [
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          },
+          "rows": {
+            "anyOf": [
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "columns": [
+            "产品",
+            "年份"
+          ],
+          "rows": [
+            [
+              "Workers",
+              "2017"
+            ],
+            [
+              "R2",
+              "2021"
+            ]
+          ]
+        }
+      ]
+    },
+    "timeline": {
+      "kind": "encoding",
+      "binds": "timeline",
+      "fields": [
+        "items"
+      ],
+      "usage": "时间线大事记，items 是 {date,text}[]",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "date",
+                    "text"
+                  ],
+                  "properties": {
+                    "date": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "items": [
+            {
+              "date": "2009",
+              "text": "Cloudflare 创立"
+            },
+            {
+              "date": "2017",
+              "text": "Workers 发布"
+            }
+          ]
+        }
+      ]
+    },
+    "definition": {
+      "kind": "encoding",
+      "binds": "definition",
+      "fields": [
+        "items"
+      ],
+      "usage": "术语表 dl/dt/dd，items 是 {term,def}[]",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "term",
+                    "def"
+                  ],
+                  "properties": {
+                    "term": {
+                      "type": "string"
+                    },
+                    "def": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "items": [
+            {
+              "term": "CDN",
+              "def": "内容分发网络"
+            },
+            {
+              "term": "Anycast",
+              "def": "同 IP 多点路由"
+            }
+          ]
+        }
+      ]
+    },
+    "faq": {
+      "kind": "encoding",
+      "binds": "faq",
+      "fields": [
+        "items"
+      ],
+      "usage": "Q&A 折叠组，items 是 {q,a}[]",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "q",
+                    "a"
+                  ],
+                  "properties": {
+                    "q": {
+                      "type": "string"
+                    },
+                    "a": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "items": [
+            {
+              "q": "为什么是 isolate？",
+              "a": "冷启动从秒级降到毫秒级。"
+            }
+          ]
+        }
+      ]
+    },
+    "callout": {
+      "kind": "encoding",
+      "binds": "callout",
+      "fields": [
+        "kind",
+        "title",
+        "text"
+      ],
+      "usage": "提示框（info/warn/danger/success）",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "text"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "info",
+              "warn",
+              "danger",
+              "success"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "kind": "info",
+          "title": "Note",
+          "text": "本文 by `llm-report-html`。"
+        }
+      ]
+    },
+    "mermaid": {
+      "kind": "encoding",
+      "binds": "mermaid",
+      "fields": [
+        "code"
+      ],
+      "usage": "ESCAPE HATCH ONLY: 自定义形状/subgraph/Sankey/C4 等 diagram 表达不了的图。优先用 diagram。",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "code": "flowchart LR\n  A[\"用户\"] --> B[\"边缘节点\"]\n  B --> C[\"源站\"]"
+        }
+      ]
+    },
+    "diagram": {
+      "kind": "encoding",
+      "binds": "diagram",
+      "fields": [
+        "kind",
+        "..."
+      ],
+      "usage": "结构化图形,kind=flow|sequence|quadrant|tree|state。AI 填字段,渲染器生成 mermaid。优先级高于 mermaid。",
+      "schema": {
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "flow",
+              "sequence",
+              "quadrant",
+              "tree",
+              "state"
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "flow"
+                }
+              },
+              "required": [
+                "kind"
+              ]
+            },
+            "then": {
+              "$ref": "#/$defs/diagram.flow"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "sequence"
+                }
+              },
+              "required": [
+                "kind"
+              ]
+            },
+            "then": {
+              "$ref": "#/$defs/diagram.sequence"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "quadrant"
+                }
+              },
+              "required": [
+                "kind"
+              ]
+            },
+            "then": {
+              "$ref": "#/$defs/diagram.quadrant"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "tree"
+                }
+              },
+              "required": [
+                "kind"
+              ]
+            },
+            "then": {
+              "$ref": "#/$defs/diagram.tree"
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "state"
+                }
+              },
+              "required": [
+                "kind"
+              ]
+            },
+            "then": {
+              "$ref": "#/$defs/diagram.state"
+            }
+          }
+        ]
+      }
+    },
+    "image": {
+      "kind": "encoding",
+      "binds": "image",
+      "fields": [
+        "src",
+        "alt",
+        "caption"
+      ],
+      "usage": "图片，src 必须 https:// 或 data: URI",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "src"
+        ],
+        "properties": {
+          "src": {
+            "type": "string",
+            "pattern": "^(https?://|data:)"
+          },
+          "alt": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "src": "https://example.com/diagram.png",
+          "alt": "架构图",
+          "caption": "图 1：系统架构"
+        }
+      ]
+    },
+    "input": {
+      "kind": "encoding",
+      "binds": "input",
+      "fields": [
+        "bind",
+        "label"
+      ],
+      "usage": "UI 控件（绑定到 state cell）",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bind"
+        ],
+        "properties": {
+          "bind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string"
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "bind": "income",
+          "label": "年收入"
+        }
+      ]
+    },
+    "stat": {
+      "kind": "encoding",
+      "binds": "stat",
+      "fields": [
+        "label",
+        "value",
+        "format"
+      ],
+      "usage": "KPI 单值卡，value 可绑定到 cell",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "$ref": "#/$defs/value"
+          },
+          "format": {
+            "enum": [
+              "plain",
+              "number",
+              "currency",
+              "percent"
+            ]
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "label": "应缴税款",
+          "value": {
+            "$bind": "tax"
+          },
+          "format": "currency"
+        }
+      ]
+    },
+    "details": {
+      "kind": "layout",
+      "binds": "accordion",
+      "fields": [
+        "summary",
+        "open",
+        "sections"
+      ],
+      "usage": "可折叠块（accordion）",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "summary",
+          "sections"
+        ],
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "open": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          },
+          "sections": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/$defs/section"
+            }
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "summary": "技术细节（点开看）",
+          "sections": [
+            {
+              "type": "paragraph",
+              "text": "深入解释..."
+            }
+          ]
+        }
+      ]
+    },
+    "tabs": {
+      "kind": "layout",
+      "binds": "tabs",
+      "fields": [
+        "items"
+      ],
+      "usage": "标签页：多视图切换",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "label",
+                "sections"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "sections": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "#/$defs/section"
+                  }
+                }
+              }
+            }
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "items": [
+            {
+              "label": "概览",
+              "sections": [
+                {
+                  "type": "paragraph",
+                  "text": "概览内容"
+                }
+              ]
+            },
+            {
+              "label": "详情",
+              "sections": [
+                {
+                  "type": "paragraph",
+                  "text": "详情内容"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "columns": {
+      "kind": "layout",
+      "binds": "columns",
+      "fields": [
+        "items"
+      ],
+      "usage": "N 列并排（最多 4 列）",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sections"
+              ],
+              "properties": {
+                "sections": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "$ref": "#/$defs/section"
+                  }
+                }
+              }
+            }
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "items": [
+            {
+              "sections": [
+                {
+                  "type": "callout",
+                  "kind": "success",
+                  "text": "**优势**"
+                }
+              ]
+            },
+            {
+              "sections": [
+                {
+                  "type": "callout",
+                  "kind": "warn",
+                  "text": "**挑战**"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "aside": {
+      "kind": "layout",
+      "binds": "aside",
+      "fields": [
+        "title",
+        "sections"
+      ],
+      "usage": "侧边/插入说明，可嵌套 sections",
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sections"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "sections": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/$defs/section"
+            }
+          },
+          "if": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "$bind"
+                ],
+                "properties": {
+                  "$bind": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "examples": [
+        {
+          "title": "原理速记",
+          "sections": [
+            {
+              "type": "paragraph",
+              "text": "侧边补充说明..."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "defs": {
+    "list.item": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text"
+          ],
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "children": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/list.item"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "diagram.flow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "const": "flow"
+        },
+        "direction": {
+          "enum": [
+            "TB",
+            "LR",
+            "RL",
+            "BT"
+          ],
+          "default": "LR"
+        },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "shape": {
+                "enum": [
+                  "rect",
+                  "round",
+                  "stadium",
+                  "diamond",
+                  "circle"
+                ],
+                "default": "rect"
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "style": {
+                "enum": [
+                  "solid",
+                  "dotted",
+                  "thick"
+                ],
+                "default": "solid"
+              }
+            }
+          }
+        },
+        "if": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "$bind"
+              ],
+              "properties": {
+                "$bind": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "type": "diagram",
+          "kind": "flow",
+          "direction": "LR",
+          "nodes": [
+            {
+              "id": "n1",
+              "label": "提案",
+              "shape": "round"
+            },
+            {
+              "id": "n2",
+              "label": "调研做过吗?",
+              "shape": "diamond"
+            },
+            {
+              "id": "n3",
+              "label": "立项"
+            },
+            {
+              "id": "n4",
+              "label": "先做调研"
+            }
+          ],
+          "edges": [
+            {
+              "from": "n1",
+              "to": "n2"
+            },
+            {
+              "from": "n2",
+              "to": "n3",
+              "label": "是"
+            },
+            {
+              "from": "n2",
+              "to": "n4",
+              "label": "否"
+            }
+          ]
+        }
+      ]
+    },
+    "diagram.sequence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "actors",
+        "messages"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "const": "sequence"
+        },
+        "actors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to",
+              "text"
+            ],
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "style": {
+                "enum": [
+                  "solid",
+                  "dashed"
+                ],
+                "default": "solid"
+              }
+            }
+          }
+        },
+        "if": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "$bind"
+              ],
+              "properties": {
+                "$bind": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "type": "diagram",
+          "kind": "sequence",
+          "actors": [
+            "用户",
+            "前端",
+            "API"
+          ],
+          "messages": [
+            {
+              "from": "用户",
+              "to": "前端",
+              "text": "点击提交"
+            },
+            {
+              "from": "前端",
+              "to": "API",
+              "text": "POST /orders"
+            },
+            {
+              "from": "API",
+              "to": "前端",
+              "text": "201 Created",
+              "style": "dashed"
+            }
+          ]
+        }
+      ]
+    },
+    "diagram.quadrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "axes",
+        "items"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "const": "quadrant"
+        },
+        "title": {
+          "type": "string"
+        },
+        "axes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "x",
+            "y"
+          ],
+          "properties": {
+            "x": {
+              "$ref": "#/$defs/diagram.quadrant.axis"
+            },
+            "y": {
+              "$ref": "#/$defs/diagram.quadrant.axis"
+            }
+          }
+        },
+        "quadrants": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "q1": {
+              "type": "string"
+            },
+            "q2": {
+              "type": "string"
+            },
+            "q3": {
+              "type": "string"
+            },
+            "q4": {
+              "type": "string"
+            }
+          }
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "x",
+              "y"
+            ],
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "x": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "y": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        },
+        "if": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "$bind"
+              ],
+              "properties": {
+                "$bind": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "type": "diagram",
+          "kind": "quadrant",
+          "axes": {
+            "x": {
+              "low": "不紧急",
+              "high": "紧急"
+            },
+            "y": {
+              "low": "不重要",
+              "high": "重要"
+            }
+          },
+          "quadrants": {
+            "q1": "重要紧急",
+            "q2": "重要不紧急",
+            "q3": "不重要不紧急",
+            "q4": "不重要紧急"
+          },
+          "items": [
+            {
+              "label": "客户故障",
+              "x": 0.9,
+              "y": 0.85
+            },
+            {
+              "label": "战略规划",
+              "x": 0.2,
+              "y": 0.9
+            },
+            {
+              "label": "回邮件",
+              "x": 0.8,
+              "y": 0.2
+            },
+            {
+              "label": "刷推",
+              "x": 0.1,
+              "y": 0.1
+            }
+          ]
+        }
+      ]
+    },
+    "diagram.quadrant.axis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "low": {
+          "type": "string"
+        },
+        "high": {
+          "type": "string"
+        }
+      }
+    },
+    "diagram.tree": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "root"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "const": "tree"
+        },
+        "root": {
+          "$ref": "#/$defs/diagram.tree.node"
+        },
+        "if": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "$bind"
+              ],
+              "properties": {
+                "$bind": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "type": "diagram",
+          "kind": "tree",
+          "root": {
+            "label": "前端框架",
+            "children": [
+              {
+                "label": "React 系",
+                "children": [
+                  {
+                    "label": "Next.js"
+                  },
+                  {
+                    "label": "Remix"
+                  }
+                ]
+              },
+              {
+                "label": "Vue 系",
+                "children": [
+                  {
+                    "label": "Nuxt"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "diagram.tree.node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagram.tree.node"
+          }
+        }
+      }
+    },
+    "diagram.state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "kind",
+        "states",
+        "transitions"
+      ],
+      "properties": {
+        "type": {
+          "const": "diagram"
+        },
+        "kind": {
+          "const": "state"
+        },
+        "states": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "initial": {
+          "type": "string",
+          "description": "id of the starting state — emits `[*] --> id`"
+        },
+        "final": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "ids of terminal states — each emits `id --> [*]`"
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "from",
+              "to"
+            ],
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "if": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "$bind"
+              ],
+              "properties": {
+                "$bind": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      "examples": [
+        {
+          "type": "diagram",
+          "kind": "state",
+          "states": [
+            {
+              "id": "Draft",
+              "label": "草稿"
+            },
+            {
+              "id": "Review",
+              "label": "评审中"
+            },
+            {
+              "id": "Published",
+              "label": "已发布"
+            }
+          ],
+          "initial": "Draft",
+          "final": [
+            "Published"
+          ],
+          "transitions": [
+            {
+              "from": "Draft",
+              "to": "Review",
+              "label": "提交"
+            },
+            {
+              "from": "Review",
+              "to": "Published",
+              "label": "通过"
+            },
+            {
+              "from": "Review",
+              "to": "Draft",
+              "label": "驳回"
+            }
+          ]
+        }
+      ]
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "$bind"
+          ],
+          "properties": {
+            "$bind": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "state.cell": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "default"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "number",
+            "text",
+            "boolean",
+            "select"
+          ]
+        },
+        "default": {},
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number"
+        },
+        "label": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    }
+  },
+  "operators": {
+    "progressive_bracket": {
+      "args": [
+        "value",
+        "[[ceiling, rate, deduction], ...]"
+      ],
+      "doc": "Tiered/progressive lookup (tax brackets, shipping tiers).",
+      "example": {
+        "progressive_bracket": [
+          {
+            "var": "income"
+          },
+          [
+            [
+              36000,
+              0.03,
+              0
+            ],
+            [
+              144000,
+              0.1,
+              2520
+            ]
+          ]
+        ]
+      }
+    },
+    "lookup_table": {
+      "args": [
+        "key",
+        "[[match, result], [null, default]]"
+      ],
+      "doc": "VLOOKUP-style discrete lookup. Last row with null match is the default.",
+      "example": {
+        "lookup_table": [
+          {
+            "var": "grade"
+          },
+          [
+            [
+              "A",
+              4
+            ],
+            [
+              "B",
+              3
+            ],
+            [
+              "C",
+              2
+            ],
+            [
+              null,
+              0
+            ]
+          ]
+        ]
+      }
+    },
+    "clamp": {
+      "args": [
+        "value",
+        "min",
+        "max"
+      ],
+      "doc": "Bound a value within [min, max].",
+      "example": {
+        "clamp": [
+          {
+            "var": "x"
+          },
+          0,
+          100
+        ]
+      }
+    },
+    "round": {
+      "args": [
+        "value",
+        "digits=0"
+      ],
+      "doc": "Round to N decimal digits.",
+      "example": {
+        "round": [
+          {
+            "var": "ratio"
+          },
+          2
+        ]
+      }
+    },
+    "format_currency": {
+      "args": [
+        "value",
+        "symbol='¥'",
+        "digits=2"
+      ],
+      "doc": "Format number as currency string.",
+      "example": {
+        "format_currency": [
+          {
+            "var": "price"
+          },
+          "$"
+        ]
+      }
+    },
+    "format_percent": {
+      "args": [
+        "value",
+        "digits=1"
+      ],
+      "doc": "Multiply by 100, append '%'.",
+      "example": {
+        "format_percent": [
+          {
+            "var": "rate"
+          },
+          1
+        ]
+      }
+    },
+    "format_date": {
+      "args": [
+        "value",
+        "fmt='YYYY-MM-DD'"
+      ],
+      "doc": "Format ISO date / timestamp using YYYY MM DD HH mm ss tokens.",
+      "example": {
+        "format_date": [
+          {
+            "var": "deadline"
+          },
+          "YYYY-MM-DD HH:mm"
+        ]
+      }
+    },
+    "date_diff_days": {
+      "args": [
+        "a",
+        "b"
+      ],
+      "doc": "Whole-day difference (a - b).",
+      "example": {
+        "date_diff_days": [
+          {
+            "var": "deadline"
+          },
+          {
+            "var": "today"
+          }
+        ]
+      }
+    }
+  }
+}

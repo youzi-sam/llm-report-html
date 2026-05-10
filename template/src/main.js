@@ -9,7 +9,7 @@
 //   reactive cells (state/computed) propagate through `input` + `stat` and
 //   any value field that uses {$bind: cell-name}.
 //
-// Adding a new surface = add catalog entry below + impl in encodings/layouts.
+// Adding a new surface = add schema catalog entry + impl in encodings/layouts.
 import './styles/main.scss'
 import MarkdownIt from 'markdown-it'
 import mermaid from 'mermaid'
@@ -17,12 +17,57 @@ import {
   initReactive, getCellSpec, getCell, setCell,
   subscribe, isBinding,
 } from './reactive.js'
+import { CATALOG } from './generated/catalog.js'
 
 const md = new MarkdownIt({ html: false, linkify: true, breaks: false })
+const cssVars = getComputedStyle(document.documentElement)
+const cssVar = (name, fallback) => cssVars.getPropertyValue(name).trim() || fallback
+const mermaidPalette = {
+  canvas: cssVar('--diagram-canvas', '#f6f6f3'),
+  surface: cssVar('--diagram-surface', '#ffffff'),
+  surfaceSoft: cssVar('--diagram-surface-soft', '#f1f1ee'),
+  ink: cssVar('--diagram-ink', '#111111'),
+  border: cssVar('--diagram-border', '#c7c7c2'),
+  borderStrong: cssVar('--diagram-border-strong', '#8f8f89'),
+  rootFill: cssVar('--diagram-root-fill', '#202020'),
+  rootStroke: cssVar('--diagram-root-stroke', '#202020'),
+  rootText: cssVar('--diagram-root-text', '#ffffff'),
+  accentFill: cssVar('--diagram-accent-fill', '#eef4ff'),
+  accentStroke: cssVar('--diagram-accent-stroke', '#7d9fcb'),
+  accentText: cssVar('--diagram-accent-text', '#142033'),
+  successFill: cssVar('--diagram-success-fill', '#eef7ef'),
+  successStroke: cssVar('--diagram-success-stroke', '#86aa86'),
+  successText: cssVar('--diagram-success-text', '#172817'),
+  line: cssVar('--diagram-line', '#777775'),
+}
 
 mermaid.initialize({
   startOnLoad: false,
-  theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default',
+  theme: 'base',
+  themeVariables: {
+    background: mermaidPalette.canvas,
+    primaryColor: mermaidPalette.surface,
+    primaryBorderColor: mermaidPalette.border,
+    primaryTextColor: mermaidPalette.ink,
+    lineColor: mermaidPalette.line,
+    secondaryColor: mermaidPalette.surfaceSoft,
+    tertiaryColor: mermaidPalette.surfaceSoft,
+    fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontSize: '15px',
+    mainBkg: mermaidPalette.surface,
+    secondBkg: mermaidPalette.surfaceSoft,
+    nodeBorder: mermaidPalette.border,
+    clusterBkg: mermaidPalette.canvas,
+    clusterBorder: mermaidPalette.border,
+    edgeLabelBackground: mermaidPalette.canvas,
+  },
+  flowchart: {
+    curve: 'linear',
+    padding: 16,
+    htmlLabels: true,
+    nodeSpacing: 44,
+    rankSpacing: 56,
+  },
   securityLevel: 'strict',
 })
 
@@ -39,33 +84,6 @@ try {
 document.title = data.title || 'Report'
 
 initReactive(data)
-
-// ─── catalog: surface → (kind, binds) ────────────────────────────────────
-// Mirror of schema/v2.json#/x-surface-catalog. Keep in sync.
-const CATALOG = {
-  // encoding surfaces (leaf)
-  heading:    { kind: 'encoding', binds: 'heading' },
-  paragraph:  { kind: 'encoding', binds: 'paragraph' },
-  quote:      { kind: 'encoding', binds: 'quote' },
-  code:       { kind: 'encoding', binds: 'code' },
-  hr:         { kind: 'encoding', binds: 'divider' },
-  list:       { kind: 'encoding', binds: 'list' },
-  table:      { kind: 'encoding', binds: 'table' },
-  timeline:   { kind: 'encoding', binds: 'timeline' },
-  definition: { kind: 'encoding', binds: 'definition' },
-  faq:        { kind: 'encoding', binds: 'faq' },
-  callout:    { kind: 'encoding', binds: 'callout' },
-  mermaid:    { kind: 'encoding', binds: 'mermaid' },
-  diagram:    { kind: 'encoding', binds: 'diagram' },
-  image:      { kind: 'encoding', binds: 'image' },
-  input:      { kind: 'encoding', binds: 'input' },
-  stat:       { kind: 'encoding', binds: 'stat' },
-  // layout surfaces (container)
-  details:    { kind: 'layout',   binds: 'accordion' },
-  tabs:       { kind: 'layout',   binds: 'tabs' },
-  columns:    { kind: 'layout',   binds: 'columns' },
-  aside:      { kind: 'layout',   binds: 'aside' },
-}
 
 // ─── encodings ────────────────────────────────────────────────────────────
 // Every encoding takes a section `s` whose binding fields are ALREADY
@@ -183,7 +201,7 @@ const encodings = {
   },
 
   mermaid: s => {
-    const wrap = el('div', { class: 'mermaid-block' }, [])
+    const wrap = el('div', { class: `mermaid-block diagram-${s.kind || 'unknown'}` }, [])
     const id = 'm' + Math.random().toString(36).slice(2, 9)
     mermaid.render(id, s.code || '').then(({ svg }) => { wrap.innerHTML = svg })
       .catch(e => { wrap.innerHTML = `<div class="report-error">mermaid: ${e.message}</div>` })
@@ -194,7 +212,7 @@ const encodings = {
   // through the same pipeline as the raw `mermaid` surface. AI never writes
   // mermaid DSL for kinds covered here.
   diagram: s => {
-    const wrap = el('div', { class: 'mermaid-block' }, [])
+    const wrap = el('div', { class: `mermaid-block diagram-${s.kind || 'unknown'}` }, [])
     let code
     try {
       if (s.kind === 'flow')          code = flowToMermaid(s)
@@ -515,7 +533,15 @@ function htmlBlock(html, tag = 'div') {
 // label text don't break the parse.
 function flowToMermaid(s) {
   const dir = s.direction || 'LR'
-  const lines = [`flowchart ${dir}`]
+  const lines = [
+    `flowchart ${dir}`,
+    `  classDef start fill:${mermaidPalette.rootFill},stroke:${mermaidPalette.rootStroke},color:${mermaidPalette.rootText},stroke-width:1px;`,
+    `  classDef step fill:${mermaidPalette.surface},stroke:${mermaidPalette.border},color:${mermaidPalette.ink},stroke-width:1px;`,
+    `  classDef decision fill:${mermaidPalette.accentFill},stroke:${mermaidPalette.accentStroke},color:${mermaidPalette.accentText},stroke-width:1px;`,
+    `  classDef milestone fill:${mermaidPalette.surfaceSoft},stroke:${mermaidPalette.borderStrong},color:${mermaidPalette.ink},stroke-width:1px;`,
+    `  classDef terminal fill:${mermaidPalette.successFill},stroke:${mermaidPalette.successStroke},color:${mermaidPalette.successText},stroke-width:1px;`,
+    `  linkStyle default stroke:${mermaidPalette.line},stroke-width:1.35px;`,
+  ]
   const SHAPES = {
     rect:    ['["',  '"]'],
     round:   ['("',  '")'],
@@ -523,10 +549,28 @@ function flowToMermaid(s) {
     diamond: ['{"',  '"}'],
     circle:  ['(("', '"))'],
   }
+  const incoming = new Map()
+  const outgoing = new Map()
+  for (const n of s.nodes || []) {
+    incoming.set(n.id, 0)
+    outgoing.set(n.id, 0)
+  }
+  for (const e of s.edges || []) {
+    incoming.set(e.to, (incoming.get(e.to) || 0) + 1)
+    outgoing.set(e.from, (outgoing.get(e.from) || 0) + 1)
+  }
+  const nodeClass = n => {
+    if ((incoming.get(n.id) || 0) === 0) return 'start'
+    if ((outgoing.get(n.id) || 0) === 0) return 'terminal'
+    if (n.shape === 'diamond') return 'decision'
+    if (n.shape === 'stadium' || n.shape === 'circle') return 'milestone'
+    return 'step'
+  }
   const esc = v => String(v ?? '').replace(/"/g, '&quot;')
   for (const n of s.nodes || []) {
     const [open, close] = SHAPES[n.shape || 'rect'] || SHAPES.rect
     lines.push(`  ${n.id}${open}${esc(n.label)}${close}`)
+    lines.push(`  class ${n.id} ${nodeClass(n)};`)
   }
   for (const e of s.edges || []) {
     const arrow = e.style === 'dotted' ? '-.->'
@@ -584,17 +628,26 @@ function quadrantToMermaid(s) {
   return lines.join('\n')
 }
 
-// Translate `diagram.tree` → mermaid mindmap. Indentation drives
-// hierarchy; root uses circle shape `((label))`.
+// Translate `diagram.tree` → a controlled mermaid flowchart hierarchy.
+// Mermaid mindmap's default palette is intentionally avoided: it renders
+// oversized candy-colored nodes that do not match the report design system.
 function treeToMermaid(s) {
-  const lines = ['mindmap']
-  const sanitize = v => String(v ?? '').replace(/[\r\n]+/g, ' ')
-  function walk(node, depth) {
-    const indent = '  '.repeat(depth + 1)
-    const label = sanitize(node?.label)
-    if (depth === 0) lines.push(`${indent}root((${label}))`)
-    else             lines.push(`${indent}${label}`)
-    for (const c of node?.children || []) walk(c, depth + 1)
+  const lines = [
+    'flowchart LR',
+    `  classDef root fill:${mermaidPalette.rootFill},stroke:${mermaidPalette.rootStroke},color:${mermaidPalette.rootText},stroke-width:1px;`,
+    `  classDef node fill:${mermaidPalette.surface},stroke:${mermaidPalette.border},color:${mermaidPalette.ink},stroke-width:1px;`,
+    `  classDef leaf fill:${mermaidPalette.surfaceSoft},stroke:${mermaidPalette.border},color:${mermaidPalette.ink},stroke-width:1px;`,
+    `  linkStyle default stroke:${mermaidPalette.line},stroke-width:1.35px;`,
+  ]
+  let seq = 0
+  const esc = v => String(v ?? '').replace(/"/g, '&quot;').replace(/[\r\n]+/g, '<br/>')
+  function walk(node, depth, parent = '') {
+    const id = 'T' + seq++
+    const label = esc(node?.label)
+    lines.push(`  ${id}["${label}"]`)
+    lines.push(`  class ${id} ${depth === 0 ? 'root' : (node?.children?.length ? 'node' : 'leaf')};`)
+    if (parent) lines.push(`  ${parent} --> ${id}`)
+    for (const c of node?.children || []) walk(c, depth + 1, id)
   }
   if (s.root) walk(s.root, 0)
   return lines.join('\n')

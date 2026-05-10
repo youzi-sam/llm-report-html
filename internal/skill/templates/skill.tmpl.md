@@ -53,10 +53,9 @@ If your final draft uses fewer than 5 surface types, you didn't compress — go 
 ## Workflow
 
 ```bash
-llm-report-html validate my.json     # strict schema + lint warnings
+llm-report-html validate my.json     # schema + semantic validation + warnings
 llm-report-html render   my.json -o my.html
-# After render succeeds, return ONLY the path. Do NOT run `open`,
-# `xdg-open`, or any browser launcher — the harness opens it for you.
+# Render opens the HTML by default. Add `--no-open` only for headless runs.
 ```
 
 If the report contains a `mermaid` section, **pre-flight the diagram source** before placing it into JSON — schema cannot parse mermaid syntax, and crashes only surface at browser render time:
@@ -65,7 +64,7 @@ If the report contains a `mermaid` section, **pre-flight the diagram source** be
 echo "$mermaid_code" | .claude/skills/llm-report-html/scripts/validate-mermaid.sh
 ```
 
-Exit 0 = OK. Exit 1 = parse error on stderr; rewrite or drop the diagram. See `references/mistakes.md` for common LLM-induced mermaid pitfalls.
+Exit 0 = OK. Exit 1 = parse error on stderr; rewrite the diagram or use `diagram` if the structure fits. See `references/mistakes.md` for common LLM-induced mermaid pitfalls.
 
 To modify an existing report: `extract → edit → render`. **Never `Read` the .html** (~3 MB; overflows context).
 
@@ -114,4 +113,4 @@ Two case studies (read for technique; do NOT copy structure):
 
 ## Authoritative source
 
-`llm-report-html schema --json` is the single source of truth. CLI usage: `llm-report-html -h`.
+`llm-report-html schema --json` is the generated machine-readable contract. CLI usage: `llm-report-html -h`.

@@ -1,4 +1,8 @@
-// Package schema embeds and parses the canonical report schema.
+// Package schema embeds and parses the generated report schema.
+//
+// The canonical edit surface is manifest.json. schema.json is generated from
+// it so runtime validation, skill generation, and CLI introspection consume one
+// artifact.
 //
 // Surface catalog entries are tagged "kind": either "encoding" (leaf node)
 // or "layout" (container). Validators recurse into layout containers;
@@ -9,6 +13,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"sort"
 )
 
 //go:embed schema.json
@@ -20,7 +25,6 @@ type Doc struct {
 	Version          string                 `json:"version"`
 	SurfaceCatalog   map[string]SurfaceDef  `json:"x-surface-catalog"`
 	Operators        map[string]OperatorDef `json:"x-jsonlogic-operators"`
-	FallbackRules    map[string]string      `json:"x-fallback-rules"`
 	PresentationNote map[string]string      `json:"x-presentation-notes"`
 	Defs             map[string]DefEntry    `json:"$defs"`
 }
@@ -84,5 +88,6 @@ func SurfaceList() []string {
 	for k := range cat {
 		out = append(out, k)
 	}
+	sort.Strings(out)
 	return out
 }
