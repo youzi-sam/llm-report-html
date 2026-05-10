@@ -6,11 +6,13 @@ import { createLayouts } from '../layouts.js'
 import { createSectionRenderer } from '../sectionRenderer.js'
 
 const root = document.getElementById('root')
+const sourceDataNode = document.getElementById('report-data')
 const data = readReportData(document.getElementById('report-render-data'))
 const reactive = globalThis.LRH_REACTIVE || staticReactive()
 const diagramRenderers = globalThis.LRH_DIAGRAMS || {}
 
 document.title = data.title || 'Report'
+installSourceJSONControl(document.getElementById('source-json-control'), sourceDataNode)
 reactive.initReactive(data)
 
 const encodings = createEncodings({
@@ -41,6 +43,26 @@ function readReportData(node) {
         __html: '<p>No data filled. Use <code>llm-report-html render data.json -o out.html</code>.</p>\n',
       }],
     }
+  }
+}
+
+function installSourceJSONControl(control, dataNode) {
+  if (!control || !dataNode) return
+  const pre = control.querySelector('pre')
+  if (!pre) return
+  let rendered = false
+  control.addEventListener('toggle', () => {
+    if (!control.open || rendered) return
+    pre.textContent = prettySourceJSON(dataNode.textContent || '')
+    rendered = true
+  })
+}
+
+function prettySourceJSON(source) {
+  try {
+    return JSON.stringify(JSON.parse(source), null, 2)
+  } catch {
+    return source
   }
 }
 

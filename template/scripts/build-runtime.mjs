@@ -53,6 +53,10 @@ writeFileSync(join(dist, 'index.html'), `<!doctype html>
   <style>__REPORT_CSS__</style>
 </head>
 <body>
+  <details class="source-json" id="source-json-control">
+    <summary>JSON</summary>
+    <pre></pre>
+  </details>
   <main id="root"></main>
   <script type="application/json" id="report-data">__REPORT_DATA__</script>
   <script type="application/json" id="report-render-data">__REPORT_RENDER_DATA__</script>
