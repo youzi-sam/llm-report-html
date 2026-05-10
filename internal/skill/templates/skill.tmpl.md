@@ -57,6 +57,14 @@ llm-report-html validate my.json     # strict schema + lint warnings
 llm-report-html render   my.json -o my.html
 ```
 
+If the report contains a `mermaid` section, **pre-flight the diagram source** before placing it into JSON — schema cannot parse mermaid syntax, and crashes only surface at browser render time:
+
+```bash
+echo "$mermaid_code" | .claude/skills/llm-report-html/scripts/validate-mermaid.sh
+```
+
+Exit 0 = OK. Exit 1 = parse error on stderr; rewrite or drop the diagram. See `references/mistakes.md` for common LLM-induced mermaid pitfalls.
+
 To modify an existing report: `extract → edit → render`. **Never `Read` the .html** (~3 MB; overflows context).
 
 ```bash

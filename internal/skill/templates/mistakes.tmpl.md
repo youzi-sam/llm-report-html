@@ -37,6 +37,28 @@ This tool deliberately bounds expressiveness:
 
 If those don't suffice, the request likely doesn't fit this tool — it wants a different deliverable.
 
+### Mermaid: validate before committing to JSON
+
+Schema can only assert that `code` is a non-empty string — it cannot parse mermaid syntax. A diagram with nested unescaped `"` inside `["..."]` node labels, unclosed brackets, or other syntax errors **passes `validate` but breaks at browser render time** (you'll see `<div class="report-error">` instead of the diagram).
+
+**Always pre-flight mermaid through the skill's validator before placing it into a `section.mermaid` block:**
+
+```bash
+# stdin
+echo 'flowchart LR
+A[Start] --> B[End]' | .claude/skills/llm-report-html/scripts/validate-mermaid.sh
+
+# argument form
+.claude/skills/llm-report-html/scripts/validate-mermaid.sh "$(cat my-diagram.mmd)"
+```
+
+Exit 0 = OK. Exit 1 = parse error printed to stderr; rewrite the diagram (or drop it — this surface is optional) before continuing. First invocation auto-installs `mermaid` + `jsdom` into `scripts/node_modules/` (~30 MB, one-time).
+
+Common LLM-induced mermaid mistakes the validator catches:
+- Nested `"` inside node labels: `["{type: "x"}"]` — escape with `&quot;` or replace with `'`.
+- Unclosed `[`, `{`, `(`.
+- Reserved keywords used as node IDs.
+
 ## Lint warnings (also auto-detected)
 
 Lint is run as part of `validate`; pass `--strict` to make warnings fatal.
