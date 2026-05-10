@@ -1,0 +1,105 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "kind",
+    "actors",
+    "messages"
+  ],
+  "properties": {
+    "type": {
+      "const": "diagram"
+    },
+    "kind": {
+      "const": "sequence"
+    },
+    "actors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "to",
+          "text"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "style": {
+            "enum": [
+              "solid",
+              "dashed"
+            ],
+            "default": "solid"
+          }
+        }
+      }
+    },
+    "if": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "$bind"
+          ],
+          "properties": {
+            "$bind": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "type": "diagram",
+      "kind": "sequence",
+      "actors": [
+        "用户",
+        "前端",
+        "API"
+      ],
+      "messages": [
+        {
+          "from": "用户",
+          "to": "前端",
+          "text": "点击提交"
+        },
+        {
+          "from": "前端",
+          "to": "API",
+          "text": "POST /orders"
+        },
+        {
+          "from": "API",
+          "to": "前端",
+          "text": "201 Created",
+          "style": "dashed"
+        }
+      ]
+    }
+  ]
+}

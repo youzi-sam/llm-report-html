@@ -14,9 +14,9 @@
 // cell namespace.
 //
 // Higher-level binding resolution (template strings, deep object walking)
-// lives in template/src/main.js's renderSection wrapper since v0.9. Earlier
-// per-encoding binding helpers (bindTextField, resolveValue, hasTextBindings)
-// were retired with that refactor.
+// lives in template/src/sectionRenderer.js. Earlier per-encoding binding
+// helpers (bindTextField, resolveValue, hasTextBindings) were retired with
+// that refactor.
 import jsonLogic from 'json-logic-js'
 import { registerOperators } from './operators.js'
 

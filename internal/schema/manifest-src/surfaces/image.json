@@ -1,0 +1,56 @@
+{
+  "kind": "encoding",
+  "binds": "image",
+  "fields": [
+    "src",
+    "alt",
+    "caption"
+  ],
+  "usage": "图片，src 必须 https:// 或 data: URI",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "src"
+    ],
+    "properties": {
+      "src": {
+        "type": "string",
+        "pattern": "^(https?://|data:)"
+      },
+      "alt": {
+        "type": "string"
+      },
+      "caption": {
+        "type": "string"
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "src": "https://example.com/diagram.png",
+      "alt": "架构图",
+      "caption": "图 1：系统架构"
+    }
+  ]
+}

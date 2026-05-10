@@ -1,6 +1,6 @@
 ---
 name: llm-report-html
-description: This skill should be used when the user wants a self-contained HTML report — briefing, KPI dashboard, status update, comparison, how-to tutorial, FAQ page, calculator, filtered list, or anything they will read in a browser, email, or paste in chat. The skill produces typed JSON and runs the local `llm-report-html` CLI to render a single self-contained `.html` file (renderer + data inlined). It NEVER reads the rendered HTML directly (the file embeds a ~3 MB renderer that overflows agent context). It enforces a 4-question composition worksheet BEFORE writing JSON, uses a curated surface catalog with strict JSON Schema validation, and provides JSONLogic operators for bounded interactivity instead of arbitrary code.
+description: This skill should be used when the user wants a self-contained HTML report — briefing, KPI dashboard, status update, comparison, how-to tutorial, FAQ page, calculator, filtered list, or anything they will read in a browser, email, or paste in chat. The skill produces typed JSON and runs the local `llm-report-html` CLI to render a single self-contained `.html` file (feature-pruned renderer + data inlined). It NEVER reads the rendered HTML directly; use `extract` to recover source JSON. It enforces a 4-question composition worksheet BEFORE writing JSON, uses a curated surface catalog with strict JSON Schema validation, and provides JSONLogic operators for bounded interactivity instead of arbitrary code.
 ---
 
 # llm-report-html
@@ -38,7 +38,7 @@ These are **non-skippable**. If you can't answer one in writing, EITHER ask the 
      a number / metric  → stat
      a comparison       → columns OR table
      a sequence in time → timeline
-     a relation graph   → mermaid
+     a relation graph   → diagram
      deep-dive most readers skip → details
      attributed claim   → quote
      Q & A              → faq
@@ -58,15 +58,7 @@ llm-report-html render   my.json -o my.html
 # Render opens the HTML by default. Add `--no-open` only for headless runs.
 ```
 
-If the report contains a `mermaid` section, **pre-flight the diagram source** before placing it into JSON — schema cannot parse mermaid syntax, and crashes only surface at browser render time:
-
-```bash
-echo "$mermaid_code" | .claude/skills/llm-report-html/scripts/validate-mermaid.sh
-```
-
-Exit 0 = OK. Exit 1 = parse error on stderr; rewrite the diagram or use `diagram` if the structure fits. See `references/mistakes.md` for common LLM-induced mermaid pitfalls.
-
-To modify an existing report: `extract → edit → render`. **Never `Read` the .html** (~3 MB; overflows context).
+To modify an existing report: `extract → edit → render`. **Never `Read` the .html**; it embeds runtime packs and report data. Use `extract` for the source JSON slot.
 
 ```bash
 llm-report-html extract  out.html -o doc.json
@@ -108,7 +100,7 @@ Two case studies (read for technique; do NOT copy structure):
 - `references/surfaces.md` — switch-from-to table; full per-surface fields + examples
 - `references/operators.md` — JSONLogic operator library
 - `references/reactivity.md` — cells / bindings / conditionals / arrays
-- `references/mistakes.md` — pitfalls (mermaid `\n`, image src, …)
+- `references/mistakes.md` — pitfalls (diagram ids, image src, …)
 - `references/type-bindings.md` — TS / Python type generation from the schema
 
 ## Authoritative source

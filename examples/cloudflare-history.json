@@ -32,7 +32,24 @@
     },
 
     { "type": "heading", "level": 2, "text": "技术架构演进" },
-    { "type": "mermaid", "code": "flowchart LR\n  A[反向代理 + DDoS 防护] --> B[CDN 网络]\n  B --> C[边缘 Workers]\n  C --> D[R2 / D1 / KV]\n  C --> E[Workers AI]\n  D --> F[完整边缘平台]\n  E --> F" },
+    { "type": "diagram", "kind": "flow", "direction": "LR",
+      "nodes": [
+        { "id": "proxy", "label": "反向代理 + DDoS 防护" },
+        { "id": "cdn", "label": "CDN 网络" },
+        { "id": "workers", "label": "边缘 Workers", "shape": "round" },
+        { "id": "storage", "label": "R2 / D1 / KV" },
+        { "id": "ai", "label": "Workers AI" },
+        { "id": "platform", "label": "完整边缘平台", "shape": "stadium" }
+      ],
+      "edges": [
+        { "from": "proxy", "to": "cdn" },
+        { "from": "cdn", "to": "workers" },
+        { "from": "workers", "to": "storage" },
+        { "from": "workers", "to": "ai" },
+        { "from": "storage", "to": "platform" },
+        { "from": "ai", "to": "platform" }
+      ]
+    },
 
     { "type": "details", "summary": "为什么 Workers 重要", "sections": [
       { "type": "paragraph", "text": "Workers 把执行从中心机房推到边缘节点，使用 V8 isolate 而非容器，冷启动从秒级降到毫秒级。这一选择决定了后续 R2/D1/AI 都构建在 isolate 模型之上，而不是另起一套 runtime。" },

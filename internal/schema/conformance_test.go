@@ -39,11 +39,16 @@ func TestHTMLRuntimeUsesGeneratedCatalog(t *testing.T) {
 }
 
 func TestEverySchemaSurfaceHasHTMLImplementation(t *testing.T) {
-	mainJS := readRepoFile(t, "template", "src", "main.js")
+	encodingsJS := readRepoFile(t, "template", "src", "encodings.js")
+	layoutsJS := readRepoFile(t, "template", "src", "layouts.js")
 	for _, name := range SurfaceList() {
 		def := Schema().SurfaceCatalog[name]
-		if !hasObjectKey(mainJS, def.Binds) {
-			t.Fatalf("surface %q resolves to %s/%s but template/src/main.js has no implementation key %q", name, def.Kind, def.Binds, def.Binds)
+		src := encodingsJS
+		if def.Kind == "layout" {
+			src = layoutsJS
+		}
+		if !hasObjectKey(src, def.Binds) {
+			t.Fatalf("surface %q resolves to %s/%s but template/src/%ss.js has no implementation key %q", name, def.Kind, def.Binds, def.Kind, def.Binds)
 		}
 	}
 }

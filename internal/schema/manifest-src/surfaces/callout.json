@@ -1,0 +1,61 @@
+{
+  "kind": "encoding",
+  "binds": "callout",
+  "fields": [
+    "kind",
+    "title",
+    "text"
+  ],
+  "usage": "提示框（info/warn/danger/success）",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "kind",
+      "text"
+    ],
+    "properties": {
+      "kind": {
+        "enum": [
+          "info",
+          "warn",
+          "danger",
+          "success"
+        ]
+      },
+      "title": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "kind": "info",
+      "title": "Note",
+      "text": "本文 by `llm-report-html`。"
+    }
+  ]
+}

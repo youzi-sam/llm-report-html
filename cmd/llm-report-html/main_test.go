@@ -22,6 +22,14 @@ func TestRenderMarkdownTargetUnsupported(t *testing.T) {
 	}
 }
 
+func TestValidateUnknownSurfaceUnsupported(t *testing.T) {
+	path := writeTempDoc(t, `{"sections":[{"type":"raw_diagram","code":"A --> B"}]}`)
+	err := cmdValidate([]string{path})
+	if err == nil || !strings.Contains(err.Error(), "schema validation failed") {
+		t.Fatalf("expected unknown surface to fail schema validation, got %v", err)
+	}
+}
+
 func TestValidateUndeclaredBindFails(t *testing.T) {
 	path := writeTempDoc(t, `{"sections":[{"type":"stat","label":"X","value":{"$bind":"missing"}}]}`)
 	err := cmdValidate([]string{path})
@@ -50,6 +58,66 @@ func TestValidateDiagramRefsFail(t *testing.T) {
 	err := cmdValidate([]string{path})
 	if err == nil || !strings.Contains(err.Error(), "undeclared-node") {
 		t.Fatalf("expected undeclared-node semantic error, got %v", err)
+	}
+}
+
+func TestValidateFlowEndIDAllowed(t *testing.T) {
+	path := writeTempDoc(t, `{
+		"sections":[{
+			"type":"diagram",
+			"kind":"flow",
+			"nodes":[
+				{"id":"start","label":"Start"},
+				{"id":"end","label":"End"}
+			],
+			"edges":[{"from":"start","to":"end"}]
+		}]
+	}`)
+	if err := cmdValidate([]string{path}); err != nil {
+		t.Fatalf("expected flow SVG backend to allow domain id, got %v", err)
+	}
+}
+
+func TestValidateStateEndIDAllowed(t *testing.T) {
+	path := writeTempDoc(t, `{
+		"sections":[{
+			"type":"diagram",
+			"kind":"state",
+			"states":[{"id":"end","label":"End"}],
+			"transitions":[]
+		}]
+	}`)
+	if err := cmdValidate([]string{path}); err != nil {
+		t.Fatalf("expected state SVG backend to allow domain id, got %v", err)
+	}
+}
+
+func TestValidateERRelationshipRefsFail(t *testing.T) {
+	path := writeTempDoc(t, `{
+		"sections":[{
+			"type":"diagram",
+			"kind":"er",
+			"entities":[{"id":"Customer","label":"客户"}],
+			"relationships":[{"from":"Customer","to":"Order","label":"places"}]
+		}]
+	}`)
+	err := cmdValidate([]string{path})
+	if err == nil || !strings.Contains(err.Error(), "undeclared-entity") {
+		t.Fatalf("expected undeclared-entity semantic error, got %v", err)
+	}
+}
+
+func TestValidateEREndIDAllowed(t *testing.T) {
+	path := writeTempDoc(t, `{
+		"sections":[{
+			"type":"diagram",
+			"kind":"er",
+			"entities":[{"id":"end","label":"End"}],
+			"relationships":[]
+		}]
+	}`)
+	if err := cmdValidate([]string{path}); err != nil {
+		t.Fatalf("expected ER SVG backend to allow domain id, got %v", err)
 	}
 }
 

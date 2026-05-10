@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "label"
+  ],
+  "properties": {
+    "label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "children": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagram.tree.node"
+      }
+    }
+  }
+}

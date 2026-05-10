@@ -1,0 +1,155 @@
+{
+  "progressive_bracket": {
+    "args": [
+      "value",
+      "[[ceiling, rate, deduction], ...]"
+    ],
+    "doc": "Tiered/progressive lookup (tax brackets, shipping tiers).",
+    "example": {
+      "progressive_bracket": [
+        {
+          "var": "income"
+        },
+        [
+          [
+            36000,
+            0.03,
+            0
+          ],
+          [
+            144000,
+            0.1,
+            2520
+          ]
+        ]
+      ]
+    }
+  },
+  "lookup_table": {
+    "args": [
+      "key",
+      "[[match, result], [null, default]]"
+    ],
+    "doc": "VLOOKUP-style discrete lookup. Last row with null match is the default.",
+    "example": {
+      "lookup_table": [
+        {
+          "var": "grade"
+        },
+        [
+          [
+            "A",
+            4
+          ],
+          [
+            "B",
+            3
+          ],
+          [
+            "C",
+            2
+          ],
+          [
+            null,
+            0
+          ]
+        ]
+      ]
+    }
+  },
+  "clamp": {
+    "args": [
+      "value",
+      "min",
+      "max"
+    ],
+    "doc": "Bound a value within [min, max].",
+    "example": {
+      "clamp": [
+        {
+          "var": "x"
+        },
+        0,
+        100
+      ]
+    }
+  },
+  "round": {
+    "args": [
+      "value",
+      "digits=0"
+    ],
+    "doc": "Round to N decimal digits.",
+    "example": {
+      "round": [
+        {
+          "var": "ratio"
+        },
+        2
+      ]
+    }
+  },
+  "format_currency": {
+    "args": [
+      "value",
+      "symbol='¥'",
+      "digits=2"
+    ],
+    "doc": "Format number as currency string.",
+    "example": {
+      "format_currency": [
+        {
+          "var": "price"
+        },
+        "$"
+      ]
+    }
+  },
+  "format_percent": {
+    "args": [
+      "value",
+      "digits=1"
+    ],
+    "doc": "Multiply by 100, append '%'.",
+    "example": {
+      "format_percent": [
+        {
+          "var": "rate"
+        },
+        1
+      ]
+    }
+  },
+  "format_date": {
+    "args": [
+      "value",
+      "fmt='YYYY-MM-DD'"
+    ],
+    "doc": "Format ISO date / timestamp using YYYY MM DD HH mm ss tokens.",
+    "example": {
+      "format_date": [
+        {
+          "var": "deadline"
+        },
+        "YYYY-MM-DD HH:mm"
+      ]
+    }
+  },
+  "date_diff_days": {
+    "args": [
+      "a",
+      "b"
+    ],
+    "doc": "Whole-day difference (a - b).",
+    "example": {
+      "date_diff_days": [
+        {
+          "var": "deadline"
+        },
+        {
+          "var": "today"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "label": {
+      "type": "string"
+    },
+    "low": {
+      "type": "string"
+    },
+    "high": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "kind",
+    "entities",
+    "relationships"
+  ],
+  "properties": {
+    "type": {
+      "const": "diagram"
+    },
+    "kind": {
+      "const": "er"
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+                },
+                "type": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9_]*$",
+                  "default": "string"
+                },
+                "key": {
+                  "enum": [
+                    "PK",
+                    "FK",
+                    "UK"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "to",
+          "label"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fromCardinality": {
+            "enum": [
+              "zero_or_one",
+              "one",
+              "zero_or_more",
+              "one_or_more"
+            ],
+            "default": "one"
+          },
+          "toCardinality": {
+            "enum": [
+              "zero_or_one",
+              "one",
+              "zero_or_more",
+              "one_or_more"
+            ],
+            "default": "zero_or_more"
+          },
+          "style": {
+            "enum": [
+              "solid",
+              "dotted"
+            ],
+            "default": "solid"
+          }
+        }
+      }
+    },
+    "if": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "$bind"
+          ],
+          "properties": {
+            "$bind": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "type": "diagram",
+      "kind": "er",
+      "entities": [
+        {
+          "id": "Customer",
+          "label": "客户",
+          "attributes": [
+            {
+              "name": "id",
+              "type": "string",
+              "key": "PK"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "id": "Order",
+          "label": "订单",
+          "attributes": [
+            {
+              "name": "id",
+              "type": "string",
+              "key": "PK"
+            },
+            {
+              "name": "customer_id",
+              "type": "string",
+              "key": "FK"
+            },
+            {
+              "name": "total",
+              "type": "number"
+            }
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "from": "Customer",
+          "to": "Order",
+          "label": "places",
+          "fromCardinality": "one",
+          "toCardinality": "zero_or_more"
+        }
+      ]
+    }
+  ]
+}

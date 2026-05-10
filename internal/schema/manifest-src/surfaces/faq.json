@@ -1,0 +1,84 @@
+{
+  "kind": "encoding",
+  "binds": "faq",
+  "fields": [
+    "items"
+  ],
+  "usage": "Q&A 折叠组，items 是 {q,a}[]",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "items"
+    ],
+    "properties": {
+      "items": {
+        "anyOf": [
+          {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "q",
+                "a"
+              ],
+              "properties": {
+                "q": {
+                  "type": "string"
+                },
+                "a": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "items": [
+        {
+          "q": "为什么是 isolate？",
+          "a": "冷启动从秒级降到毫秒级。"
+        }
+      ]
+    }
+  ]
+}

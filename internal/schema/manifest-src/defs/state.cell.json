@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "default"
+  ],
+  "properties": {
+    "type": {
+      "enum": [
+        "number",
+        "text",
+        "boolean",
+        "select"
+      ]
+    },
+    "default": {},
+    "min": {
+      "type": "number"
+    },
+    "max": {
+      "type": "number"
+    },
+    "step": {
+      "type": "number"
+    },
+    "label": {
+      "type": "string"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  }
+}

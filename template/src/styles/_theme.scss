@@ -38,18 +38,23 @@
   --callout-bg: var(--md-paper);
   --callout-border: var(--md-slate-200);
 
-  // Diagram tokens consumed by both CSS and Mermaid's JS theme config.
-  --diagram-canvas: #f6f6f3;
+  // Diagram tokens consumed by CSS and renderer-owned SVG backends.
+  --diagram-canvas: #fbfbf9;
   --diagram-surface: #ffffff;
   --diagram-surface-soft: #f1f1ee;
   --diagram-ink: #111111;
-  --diagram-border: #c7c7c2;
+  --diagram-border: #e2e2df;
   --diagram-border-strong: #8f8f89;
+  --diagram-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+  --diagram-shadow-hover: 0 8px 30px -5px rgba(0, 0, 0, 0.08);
+  --diagram-font-size: 13px;
+  --diagram-font-size-small: 12px;
+  --diagram-label-line-height: 1.35;
   --diagram-root-fill: #202020;
   --diagram-root-stroke: #202020;
   --diagram-root-text: #ffffff;
-  --diagram-accent-fill: #eef4ff;
-  --diagram-accent-stroke: #7d9fcb;
+  --diagram-accent-fill: #f0f5ff;
+  --diagram-accent-stroke: #5c85ff;
   --diagram-accent-text: #142033;
   --diagram-success-fill: #eef7ef;
   --diagram-success-stroke: #86aa86;
@@ -80,17 +85,19 @@
     --md-warning-50: rgba(148, 98, 0, 0.1);
     --md-danger-50: rgba(199, 51, 47, 0.1);
 
-    --diagram-canvas: #151515;
-    --diagram-surface: #202020;
+    --diagram-canvas: #0d0d0d;
+    --diagram-surface: #1a1a1a;
     --diagram-surface-soft: #181818;
     --diagram-ink: #f5f5f5;
-    --diagram-border: #525252;
+    --diagram-border: #2d2d2d;
     --diagram-border-strong: #8a8a8a;
+    --diagram-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    --diagram-shadow-hover: 0 14px 36px -12px rgba(0, 0, 0, 0.62);
     --diagram-root-fill: #f5f5f5;
     --diagram-root-stroke: #f5f5f5;
     --diagram-root-text: #111111;
-    --diagram-accent-fill: #11233a;
-    --diagram-accent-stroke: #5f8fcb;
+    --diagram-accent-fill: rgba(0, 85, 255, 0.15);
+    --diagram-accent-stroke: #4d82ff;
     --diagram-accent-text: #f5f9ff;
     --diagram-success-fill: #14261b;
     --diagram-success-stroke: #6fa37a;

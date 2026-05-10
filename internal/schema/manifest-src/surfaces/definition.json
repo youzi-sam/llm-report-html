@@ -1,0 +1,88 @@
+{
+  "kind": "encoding",
+  "binds": "definition",
+  "fields": [
+    "items"
+  ],
+  "usage": "术语表 dl/dt/dd，items 是 {term,def}[]",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "items"
+    ],
+    "properties": {
+      "items": {
+        "anyOf": [
+          {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "term",
+                "def"
+              ],
+              "properties": {
+                "term": {
+                  "type": "string"
+                },
+                "def": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "items": [
+        {
+          "term": "CDN",
+          "def": "内容分发网络"
+        },
+        {
+          "term": "Anycast",
+          "def": "同 IP 多点路由"
+        }
+      ]
+    }
+  ]
+}

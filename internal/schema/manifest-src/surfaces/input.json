@@ -1,0 +1,51 @@
+{
+  "kind": "encoding",
+  "binds": "input",
+  "fields": [
+    "bind",
+    "label"
+  ],
+  "usage": "UI 控件（绑定到 state cell）",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "bind"
+    ],
+    "properties": {
+      "bind": {
+        "type": "string",
+        "minLength": 1
+      },
+      "label": {
+        "type": "string"
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "bind": "income",
+      "label": "年收入"
+    }
+  ]
+}

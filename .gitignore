@@ -3,6 +3,7 @@ bin/
 template/dist/
 template/node_modules/
 template/src/generated/
+internal/render/html/assets/
 
 # ─── per-developer .claude/ state (NOT part of the deliverable) ────
 # Only .claude/skills/llm-report-html/ is committed. Everything else
@@ -20,6 +21,10 @@ template/src/generated/
 .claude/skills/llm-report-html/assets/
 .claude/skills/llm-report-html/scripts/node_modules/
 .claude/skills/llm-report-html/scripts/package-lock.json
+
+# ─── local Codex/CST control plane (do not push) ───────────────────
+.cst/
+.codex/
 
 # ─── runtime / agent-generated reports at project root ─────────────
 /cf.html

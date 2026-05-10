@@ -1,0 +1,52 @@
+{
+  "kind": "encoding",
+  "binds": "heading",
+  "fields": [
+    "level",
+    "text"
+  ],
+  "usage": "章节标题（h1-h4）",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "text"
+    ],
+    "properties": {
+      "level": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 4
+      },
+      "text": {
+        "type": "string"
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "level": 2,
+      "text": "概述"
+    }
+  ]
+}

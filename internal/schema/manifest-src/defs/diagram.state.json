@@ -1,0 +1,133 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "kind",
+    "states",
+    "transitions"
+  ],
+  "properties": {
+    "type": {
+      "const": "diagram"
+    },
+    "kind": {
+      "const": "state"
+    },
+    "states": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "initial": {
+      "type": "string",
+      "description": "id of the starting state — emits `[*] --> id`"
+    },
+    "final": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "ids of terminal states — each emits `id --> [*]`"
+    },
+    "transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "to"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "if": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "$bind"
+          ],
+          "properties": {
+            "$bind": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "type": "diagram",
+      "kind": "state",
+      "states": [
+        {
+          "id": "Draft",
+          "label": "草稿"
+        },
+        {
+          "id": "Review",
+          "label": "评审中"
+        },
+        {
+          "id": "Published",
+          "label": "已发布"
+        }
+      ],
+      "initial": "Draft",
+      "final": [
+        "Published"
+      ],
+      "transitions": [
+        {
+          "from": "Draft",
+          "to": "Review",
+          "label": "提交"
+        },
+        {
+          "from": "Review",
+          "to": "Published",
+          "label": "通过"
+        },
+        {
+          "from": "Review",
+          "to": "Draft",
+          "label": "驳回"
+        }
+      ]
+    }
+  ]
+}

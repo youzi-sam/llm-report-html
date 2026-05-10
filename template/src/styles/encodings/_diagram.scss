@@ -1,0 +1,301 @@
+@use '../tokens' as *;
+
+.diagram-block {
+  margin: $sp-8 0;
+  text-align: center;
+  border: $bw solid var(--diagram-border);
+  border-radius: $r-md;
+  background: var(--diagram-canvas);
+  box-shadow: var(--diagram-shadow);
+  overflow-x: auto;
+  padding: $sp-6;
+  position: relative;
+  transition: box-shadow 180ms ease;
+
+  &:hover {
+    box-shadow: var(--diagram-shadow-hover);
+  }
+
+  svg {
+    // Do not override the computed SVG max-width or narrow diagrams upscale.
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    background: transparent !important;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.02));
+    overflow: visible;
+  }
+
+  svg text {
+    font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', system-ui, -apple-system, sans-serif !important;
+    font-size: var(--diagram-font-size) !important;
+    letter-spacing: 0 !important;
+  }
+
+  .flow-svg,
+  .quadrant-svg,
+  .sequence-svg,
+  .state-svg,
+  .er-svg,
+  .tree-svg {
+    overflow: visible;
+  }
+
+  .flow-svg-label,
+  .quadrant-svg-label,
+  .sequence-svg-actor-label,
+  .sequence-svg-message-text,
+  .state-svg-label,
+  .er-svg-entity-title,
+  .er-svg-attribute,
+  .tree-svg-label {
+    fill: var(--diagram-ink);
+    font-weight: 500;
+  }
+
+  .node.start .flow-svg-label,
+  .node.root .flow-svg-label,
+  .node.root .tree-svg-label {
+    fill: var(--diagram-root-text);
+  }
+
+  .node.decision .flow-svg-label {
+    fill: var(--diagram-accent-text);
+  }
+
+  .node.terminal .flow-svg-label {
+    fill: var(--diagram-success-text);
+  }
+
+  .flow-svg-link.dotted {
+    stroke-dasharray: 4 5;
+  }
+
+  .flow-svg-link.thick {
+    stroke-width: 2.4px !important;
+  }
+
+  .sequence-svg-message.dashed .sequence-svg-message-line,
+  .er-svg-edge.dotted .er-svg-link {
+    stroke-dasharray: 5 5;
+  }
+
+  .sequence-svg-lifeline {
+    stroke: var(--diagram-border);
+    stroke-dasharray: 5 5;
+    stroke-width: 1px;
+  }
+
+  .sequence-svg-actor rect,
+  .er-svg-entity-frame {
+    fill: var(--diagram-surface) !important;
+    stroke: var(--diagram-border-strong) !important;
+    stroke-width: 1.2px !important;
+  }
+
+  .er-svg-entity-header {
+    fill: var(--diagram-surface-soft) !important;
+    stroke: none !important;
+  }
+
+  .er-svg-row-divider {
+    stroke: var(--diagram-border);
+    stroke-width: 1px;
+  }
+
+  .er-svg-entity-title,
+  .er-svg-attribute.key {
+    font-weight: 650;
+  }
+
+  .state-svg-pseudo.initial circle,
+  .state-svg-final-inner {
+    fill: var(--diagram-ink) !important;
+    stroke: var(--diagram-ink) !important;
+  }
+
+  .state-svg-final-outer {
+    fill: var(--diagram-surface) !important;
+    stroke: var(--diagram-ink) !important;
+    stroke-width: 1.5px !important;
+  }
+
+  .flow-svg-edge-text,
+  .sequence-svg-message-text,
+  .state-svg-edge-text,
+  .er-svg-edge-text,
+  .quadrant-svg-axis-label,
+  .quadrant-svg-item-label,
+  .quadrant-svg-quadrant-label,
+  .tree-svg-edge-text {
+    fill: var(--diagram-ink);
+    font-size: var(--diagram-font-size-small) !important;
+  }
+
+  .quadrant-svg-title {
+    fill: var(--diagram-ink);
+    font-size: var(--diagram-font-size) !important;
+    font-weight: 650;
+  }
+
+  .quadrant-svg-region {
+    fill: var(--diagram-surface);
+  }
+
+  .quadrant-svg-region.q1,
+  .quadrant-svg-region.q3 {
+    fill: var(--diagram-surface-soft);
+  }
+
+  .quadrant-svg-frame {
+    fill: none;
+    stroke: var(--diagram-border-strong);
+    stroke-width: 1.2px;
+  }
+
+  .quadrant-svg-grid line {
+    stroke: var(--diagram-border);
+    stroke-width: 1px;
+    stroke-dasharray: 5 5;
+  }
+
+  .quadrant-svg-quadrant-label {
+    fill: var(--diagram-border-strong);
+    font-weight: 650;
+  }
+
+  .quadrant-svg-point {
+    fill: var(--diagram-accent-stroke);
+    stroke: var(--diagram-surface);
+    stroke-width: 2px;
+  }
+
+  .quadrant-svg-item-label {
+    font-size: var(--diagram-font-size) !important;
+    font-weight: 500;
+    paint-order: stroke;
+    stroke: var(--diagram-canvas);
+    stroke-linejoin: round;
+    stroke-width: 4px;
+  }
+
+  .nodeLabel,
+  .edgeLabel,
+  .label,
+  .cluster-label,
+  .actor,
+  .messageText,
+  .loopText,
+  .noteText,
+  foreignObject,
+  foreignObject div,
+  foreignObject span,
+  foreignObject p {
+    font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', system-ui, -apple-system, sans-serif !important;
+    font-size: var(--diagram-font-size) !important;
+    line-height: var(--diagram-label-line-height) !important;
+    letter-spacing: 0 !important;
+  }
+
+  .edgeLabel,
+  .marker,
+  .relationshipLabel,
+  .entityLabel,
+  .attributeBoxOdd,
+  .attributeBoxEven {
+    font-size: var(--diagram-font-size-small) !important;
+  }
+
+  .edgePath .path,
+  path.flowchart-link,
+  .sequence-svg-message-line,
+  .state-svg-link,
+  .er-svg-link,
+  .messageLine0,
+  .messageLine1 {
+    stroke: var(--diagram-line) !important;
+    stroke-width: 1.5px !important;
+  }
+
+  text.actor,
+  .messageText,
+  .loopText,
+  .noteText {
+    fill: var(--diagram-ink) !important;
+    stroke: none !important;
+  }
+
+  marker path,
+  .marker {
+    fill: var(--diagram-line) !important;
+    stroke: none !important;
+  }
+
+  .node rect,
+  .node circle,
+  .node ellipse,
+  .node polygon,
+  rect.actor {
+    fill: var(--diagram-surface) !important;
+    stroke: var(--diagram-border-strong) !important;
+    stroke-width: 1.2px !important;
+  }
+
+  .node.start rect,
+  .node.start circle,
+  .node.start ellipse,
+  .node.start polygon,
+  .node.root rect,
+  .node.root circle,
+  .node.root ellipse,
+  .node.root polygon {
+    fill: var(--diagram-root-fill) !important;
+    stroke: var(--diagram-root-stroke) !important;
+  }
+
+  .node.decision rect,
+  .node.decision circle,
+  .node.decision ellipse,
+  .node.decision polygon {
+    fill: var(--diagram-accent-fill) !important;
+    stroke: var(--diagram-accent-stroke) !important;
+  }
+
+  .node.terminal rect,
+  .node.terminal circle,
+  .node.terminal ellipse,
+  .node.terminal polygon {
+    fill: var(--diagram-success-fill) !important;
+    stroke: var(--diagram-success-stroke) !important;
+  }
+
+  .node.leaf rect,
+  .node.leaf circle,
+  .node.leaf ellipse,
+  .node.leaf polygon {
+    fill: var(--diagram-surface-soft) !important;
+    stroke: var(--diagram-border) !important;
+  }
+
+  .node.clickable:hover rect,
+  .node.clickable:hover circle,
+  .node.clickable:hover ellipse,
+  .node.clickable:hover polygon {
+    stroke: var(--diagram-accent-stroke) !important;
+  }
+
+  .edgeLabel,
+  .labelBackground {
+    background-color: var(--diagram-canvas) !important;
+    fill: var(--diagram-canvas) !important;
+    opacity: 0.92;
+  }
+}
+
+@media (max-width: $bp-narrow) {
+  .diagram-block {
+    margin: $sp-6 0;
+    padding: $sp-4;
+  }
+}

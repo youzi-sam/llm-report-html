@@ -1,6 +1,8 @@
 package lint
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (a *analysis) analyzeDiagram(s map[string]interface{}, path string) {
 	switch kind, _ := s["kind"].(string); kind {
@@ -8,6 +10,8 @@ func (a *analysis) analyzeDiagram(s map[string]interface{}, path string) {
 		a.analyzeFlowDiagram(s, path)
 	case "state":
 		a.analyzeStateDiagram(s, path)
+	case "er":
+		a.analyzeERDiagram(s, path)
 	}
 }
 
@@ -84,6 +88,40 @@ func (a *analysis) analyzeStateDiagram(s map[string]interface{}, path string) {
 			for _, end := range []string{"from", "to"} {
 				ref, _ := tm[end].(string)
 				check(fmt.Sprintf("%s.transitions[%d].%s", path, i, end), ref)
+			}
+		}
+	}
+}
+
+func (a *analysis) analyzeERDiagram(s map[string]interface{}, path string) {
+	ids := map[string]bool{}
+	if entities, ok := s["entities"].([]interface{}); ok {
+		for _, e := range entities {
+			em, ok := e.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if id, _ := em["id"].(string); id != "" {
+				ids[id] = true
+			}
+		}
+	}
+
+	if relationships, ok := s["relationships"].([]interface{}); ok {
+		for i, rel := range relationships {
+			rm, ok := rel.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			for _, end := range []string{"from", "to"} {
+				ref, _ := rm[end].(string)
+				if ref != "" && !ids[ref] {
+					a.addError(
+						fmt.Sprintf("%s.relationships[%d].%s", path, i, end),
+						"undeclared-entity",
+						fmt.Sprintf("relationship references entity id %q which is not declared in entities[]", ref),
+					)
+				}
 			}
 		}
 	}

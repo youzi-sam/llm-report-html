@@ -1,0 +1,25 @@
+{
+  "anyOf": [
+    {
+      "type": "string"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/list.item"
+          }
+        }
+      }
+    }
+  ]
+}

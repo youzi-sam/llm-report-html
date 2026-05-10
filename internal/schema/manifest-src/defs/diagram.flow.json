@@ -1,0 +1,152 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "kind",
+    "nodes",
+    "edges"
+  ],
+  "properties": {
+    "type": {
+      "const": "diagram"
+    },
+    "kind": {
+      "const": "flow"
+    },
+    "direction": {
+      "enum": [
+        "TB",
+        "LR",
+        "RL",
+        "BT"
+      ],
+      "default": "LR"
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "shape": {
+            "enum": [
+              "rect",
+              "round",
+              "stadium",
+              "diamond",
+              "circle"
+            ],
+            "default": "rect"
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "to"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "style": {
+            "enum": [
+              "solid",
+              "dotted",
+              "thick"
+            ],
+            "default": "solid"
+          }
+        }
+      }
+    },
+    "if": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "$bind"
+          ],
+          "properties": {
+            "$bind": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "type": "diagram",
+      "kind": "flow",
+      "direction": "LR",
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "提案",
+          "shape": "round"
+        },
+        {
+          "id": "n2",
+          "label": "调研做过吗?",
+          "shape": "diamond"
+        },
+        {
+          "id": "n3",
+          "label": "立项"
+        },
+        {
+          "id": "n4",
+          "label": "先做调研"
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": "是"
+        },
+        {
+          "from": "n2",
+          "to": "n4",
+          "label": "否"
+        }
+      ]
+    }
+  ]
+}

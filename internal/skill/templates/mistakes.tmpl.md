@@ -13,13 +13,13 @@ These are valid-against-schema-but-broken patterns that this tool deliberately c
 
 ### Reading the rendered .html file
 
-Reports embed the renderer + bundled JS (mermaid, JSONLogic, the dispatcher). Total ~3 MB. **Reading the file with `Read` / `cat` / `head` overflows agent context** and corrupts the conversation.
+Reports embed feature-selected runtime packs, CSS, render data, and the source JSON slot. **Do not read the rendered HTML with `Read` / `cat` / `head`**; use `extract`.
 
 To recover the source JSON from a rendered file:
 ```bash
 llm-report-html extract out.html -o doc.json
 ```
-This pulls only the data slot (~10 KB) — the bundle stays unread.
+This pulls only the source JSON slot — runtime packs stay unread.
 
 ### Editing the rendered HTML directly
 
@@ -55,27 +55,20 @@ Correct patterns:
 - For a "pros vs cons" comparison, use `columns` of two callouts, each with bullets in its own `text`.
 - If you only want a tinted section header without a body, use a normal `heading` — don't co-opt callout.
 
-### Mermaid: validate before committing to JSON
+### Raw diagram DSL
 
-Schema can only assert that `code` is a non-empty string — it cannot parse mermaid syntax. A diagram with nested unescaped `"` inside `["..."]` node labels, unclosed brackets, or other syntax errors **passes `validate` but breaks at browser render time** (you'll see `<div class="report-error">` instead of the diagram).
+Do not write raw diagram DSL. Use structured `diagram` with `kind: flow|sequence|quadrant|tree|state|er`; the renderer owns the SVG backend.
 
-**Always pre-flight mermaid through the skill's validator before placing it into a `section.mermaid` block:**
+Backend matrix:
+- SVG-backed: `flow`, `sequence`, `quadrant`, `tree`, `state`, `er`
 
-```bash
-# stdin
-echo 'flowchart LR
-A[Start] --> B[End]' | .claude/skills/llm-report-html/scripts/validate-mermaid.sh
+Diagram kinds are rendered and geometry-checked by the repo test gate.
 
-# argument form
-.claude/skills/llm-report-html/scripts/validate-mermaid.sh "$(cat my-diagram.mmd)"
-```
+Unsupported diagram grammars (Sankey, C4, class diagrams, etc.) are unsupported states, not escape hatches. Add a first-class `diagram.kind` before using them.
 
-Exit 0 = OK. Exit 1 = parse error printed to stderr; rewrite the diagram or use the structured `diagram` surface before continuing. First invocation auto-installs `mermaid` + `jsdom` into `scripts/node_modules/` (~30 MB, one-time).
+### Diagram typography
 
-Common LLM-induced mermaid mistakes the validator catches:
-- Nested `"` inside node labels: `["{type: "x"}"]` — escape with `&quot;` or replace with `'`.
-- Unclosed `[`, `{`, `(`.
-- Reserved keywords used as node IDs.
+Do not add per-report font-size fields or fake small text by inserting extra line breaks. Diagram typography is renderer-owned through `--diagram-font-size`, `--diagram-font-size-small`, and `--diagram-label-line-height`; structured JSON owns only semantic content.
 
 ## Semantic validation errors
 

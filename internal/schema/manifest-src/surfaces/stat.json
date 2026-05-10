@@ -1,0 +1,62 @@
+{
+  "kind": "encoding",
+  "binds": "stat",
+  "fields": [
+    "label",
+    "value",
+    "format"
+  ],
+  "usage": "KPI 单值卡，value 可绑定到 cell",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "value"
+    ],
+    "properties": {
+      "label": {
+        "type": "string"
+      },
+      "value": {
+        "$ref": "#/$defs/value"
+      },
+      "format": {
+        "enum": [
+          "plain",
+          "number",
+          "currency",
+          "percent"
+        ]
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "label": "应缴税款",
+      "value": {
+        "$bind": "tax"
+      },
+      "format": "currency"
+    }
+  ]
+}

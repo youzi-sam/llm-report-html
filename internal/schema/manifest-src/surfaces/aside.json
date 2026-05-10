@@ -1,0 +1,59 @@
+{
+  "kind": "layout",
+  "binds": "aside",
+  "fields": [
+    "title",
+    "sections"
+  ],
+  "usage": "侧边/插入说明，可嵌套 sections",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "sections"
+    ],
+    "properties": {
+      "title": {
+        "type": "string"
+      },
+      "sections": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "$ref": "#/$defs/section"
+        }
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "title": "原理速记",
+      "sections": [
+        {
+          "type": "paragraph",
+          "text": "侧边补充说明..."
+        }
+      ]
+    }
+  ]
+}

@@ -93,7 +93,7 @@ Once you have the 20% beats, surface choice **falls out** — there's almost no 
 | A number / metric | `stat` (in `columns` if multiple) |
 | A comparison (A vs B) | `columns` with two `callout`s, or `table` |
 | A sequence in time | `timeline` |
-| A relation / process | `mermaid` |
+| A relation / process | `diagram` |
 | A deep dive most readers skip | `details` (default folded) |
 | An attributed claim | `quote` (with `by`) |
 | Q & A pairs | `faq` |
@@ -117,7 +117,7 @@ Once you have the 20% beats, surface choice **falls out** — there's almost no 
 
 Resulting surfaces used: `callout` × 2, `stat` × 4, `columns`, `definition`, `tabs`, `aside`, `paragraph` (sparingly). 7+ surface types, no two adjacent `heading`+`paragraph` pairs.
 
-Compare to the markdown-trap version (single `narrative-report` template copy): mostly `heading` + `paragraph` × 12, one `mermaid`, one `table`. 5 surface types, but 24 sections. Visually flat. Same content, dramatically worse.
+Compare to the markdown-trap version (single `narrative-report` template copy): mostly `heading` + `paragraph` × 12, one `diagram`, one `table`. 5 surface types, but 24 sections. Visually flat. Same content, dramatically worse.
 
 ---
 

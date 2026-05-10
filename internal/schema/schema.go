@@ -1,8 +1,8 @@
 // Package schema embeds and parses the generated report schema.
 //
-// The canonical edit surface is manifest.json. schema.json is generated from
-// it so runtime validation, skill generation, and CLI introspection consume one
-// artifact.
+// The canonical edit surface is manifest-src/. manifest.json and schema.json
+// are generated from it so runtime validation, skill generation, and CLI
+// introspection consume one artifact.
 //
 // Surface catalog entries are tagged "kind": either "encoding" (leaf node)
 // or "layout" (container). Validators recurse into layout containers;

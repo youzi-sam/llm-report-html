@@ -1,0 +1,50 @@
+{
+  "kind": "encoding",
+  "binds": "code",
+  "fields": [
+    "lang",
+    "code"
+  ],
+  "usage": "代码块，带 lang 字段",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "code"
+    ],
+    "properties": {
+      "lang": {
+        "type": "string"
+      },
+      "code": {
+        "type": "string"
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "lang": "javascript",
+      "code": "console.log('hello')"
+    }
+  ]
+}

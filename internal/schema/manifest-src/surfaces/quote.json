@@ -1,0 +1,50 @@
+{
+  "kind": "encoding",
+  "binds": "quote",
+  "fields": [
+    "text",
+    "by"
+  ],
+  "usage": "引用 + 可选作者",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "text"
+    ],
+    "properties": {
+      "text": {
+        "type": "string"
+      },
+      "by": {
+        "type": "string"
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "text": "Premature optimization is the root of all evil.",
+      "by": "Donald Knuth"
+    }
+  ]
+}

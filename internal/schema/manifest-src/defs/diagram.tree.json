@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "kind",
+    "root"
+  ],
+  "properties": {
+    "type": {
+      "const": "diagram"
+    },
+    "kind": {
+      "const": "tree"
+    },
+    "root": {
+      "$ref": "#/$defs/diagram.tree.node"
+    },
+    "if": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "$bind"
+          ],
+          "properties": {
+            "$bind": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "type": "diagram",
+      "kind": "tree",
+      "root": {
+        "label": "前端框架",
+        "children": [
+          {
+            "label": "React 系",
+            "children": [
+              {
+                "label": "Next.js"
+              },
+              {
+                "label": "Remix"
+              }
+            ]
+          },
+          {
+            "label": "Vue 系",
+            "children": [
+              {
+                "label": "Nuxt"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

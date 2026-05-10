@@ -1,0 +1,121 @@
+{
+  "kind": "encoding",
+  "binds": "table",
+  "fields": [
+    "columns",
+    "rows"
+  ],
+  "usage": "表格（columns + rows）",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "columns",
+      "rows"
+    ],
+    "properties": {
+      "columns": {
+        "anyOf": [
+          {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      },
+      "rows": {
+        "anyOf": [
+          {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "columns": [
+        "产品",
+        "年份"
+      ],
+      "rows": [
+        [
+          "Workers",
+          "2017"
+        ],
+        [
+          "R2",
+          "2021"
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "kind": "layout",
+  "binds": "tabs",
+  "fields": [
+    "items"
+  ],
+  "usage": "标签页：多视图切换",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "items"
+    ],
+    "properties": {
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label",
+            "sections"
+          ],
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "sections": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/section"
+              }
+            }
+          }
+        }
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "items": [
+        {
+          "label": "概览",
+          "sections": [
+            {
+              "type": "paragraph",
+              "text": "概览内容"
+            }
+          ]
+        },
+        {
+          "label": "详情",
+          "sections": [
+            {
+              "type": "paragraph",
+              "text": "详情内容"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

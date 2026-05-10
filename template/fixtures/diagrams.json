@@ -1,0 +1,244 @@
+{
+  "title": "Diagram Compiler Fixtures",
+  "sections": [
+    {
+      "type": "diagram",
+      "kind": "flow",
+      "direction": "TB",
+      "nodes": [
+        {
+          "id": "start",
+          "label": "1378 燕王长子\n肥胖足疾、儒家教育",
+          "shape": "rect"
+        },
+        {
+          "id": "battle",
+          "label": "1399 北平守卫战\n万人挡五十万",
+          "shape": "round"
+        },
+        {
+          "id": "throne",
+          "label": "1424.8 即位\n年号洪熙",
+          "shape": "diamond"
+        },
+        {
+          "id": "policy",
+          "label": "数十道诏书\n方针一次性定型",
+          "shape": "stadium"
+        },
+        {
+          "id": "legacy",
+          "label": "仁宣之治\n11 年盛世",
+          "shape": "round"
+        }
+      ],
+      "edges": [
+        {
+          "from": "start",
+          "to": "battle"
+        },
+        {
+          "from": "battle",
+          "to": "throne"
+        },
+        {
+          "from": "throne",
+          "to": "policy"
+        },
+        {
+          "from": "policy",
+          "to": "legacy",
+          "label": "儿子执行",
+          "style": "thick"
+        }
+      ]
+    },
+    {
+      "type": "diagram",
+      "kind": "quadrant",
+      "title": "报告图表后端适配度",
+      "axes": {
+        "x": {
+          "low": "布局不可控",
+          "high": "布局可控"
+        },
+        "y": {
+          "low": "低报告价值",
+          "high": "高报告价值"
+        }
+      },
+      "quadrants": {
+        "q1": "优先自绘",
+        "q2": "保留观察",
+        "q3": "暂不支持",
+        "q4": "工具输出"
+      },
+      "items": [
+        {
+          "label": "flow",
+          "x": 0.84,
+          "y": 0.78
+        },
+        {
+          "label": "tree",
+          "x": 0.78,
+          "y": 0.72
+        },
+        {
+          "label": "quadrant",
+          "x": 0.91,
+          "y": 0.86
+        },
+        {
+          "label": "sequence",
+          "x": 0.42,
+          "y": 0.67
+        }
+      ]
+    },
+    {
+      "type": "diagram",
+      "kind": "tree",
+      "root": {
+        "label": "明成祖 朱棣 / 仁孝文皇后 徐氏",
+        "children": [
+          {
+            "label": "长子 朱高炽（明仁宗）",
+            "children": [
+              {
+                "label": "朱瞻基（明宣宗）",
+                "children": [
+                  {
+                    "label": "朱祁钰（代宗）"
+                  },
+                  {
+                    "label": "朱祁镇（英宗）"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "label": "次子 朱高煦（汉王）"
+          }
+        ]
+      }
+    },
+    {
+      "type": "diagram",
+      "kind": "sequence",
+      "actors": [
+        "用户",
+        "报告 CLI",
+        "HTML Renderer"
+      ],
+      "messages": [
+        {
+          "from": "用户",
+          "to": "报告 CLI",
+          "text": "render JSON"
+        },
+        {
+          "from": "报告 CLI",
+          "to": "HTML Renderer",
+          "text": "embed data"
+        },
+        {
+          "from": "HTML Renderer",
+          "to": "用户",
+          "text": "single-file HTML",
+          "style": "dashed"
+        }
+      ]
+    },
+    {
+      "type": "diagram",
+      "kind": "state",
+      "states": [
+        {
+          "id": "Draft",
+          "label": "草稿"
+        },
+        {
+          "id": "Review",
+          "label": "评审中"
+        },
+        {
+          "id": "Done",
+          "label": "完成"
+        }
+      ],
+      "initial": "Draft",
+      "final": [
+        "Done"
+      ],
+      "transitions": [
+        {
+          "from": "Draft",
+          "to": "Review",
+          "label": "提交"
+        },
+        {
+          "from": "Review",
+          "to": "Done",
+          "label": "通过"
+        },
+        {
+          "from": "Review",
+          "to": "Draft",
+          "label": "退回"
+        }
+      ]
+    },
+    {
+      "type": "diagram",
+      "kind": "er",
+      "entities": [
+        {
+          "id": "Report",
+          "label": "报告",
+          "attributes": [
+            {
+              "name": "id",
+              "type": "string",
+              "key": "PK"
+            },
+            {
+              "name": "title",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "id": "Section",
+          "label": "章节",
+          "attributes": [
+            {
+              "name": "id",
+              "type": "string",
+              "key": "PK"
+            },
+            {
+              "name": "report_id",
+              "type": "string",
+              "key": "FK"
+            },
+            {
+              "name": "type",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "from": "Report",
+          "to": "Section",
+          "label": "contains",
+          "fromCardinality": "one",
+          "toCardinality": "one_or_more"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "kind",
+    "axes",
+    "items"
+  ],
+  "properties": {
+    "type": {
+      "const": "diagram"
+    },
+    "kind": {
+      "const": "quadrant"
+    },
+    "title": {
+      "type": "string"
+    },
+    "axes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "$ref": "#/$defs/diagram.quadrant.axis"
+        },
+        "y": {
+          "$ref": "#/$defs/diagram.quadrant.axis"
+        }
+      }
+    },
+    "quadrants": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "q1": {
+          "type": "string"
+        },
+        "q2": {
+          "type": "string"
+        },
+        "q3": {
+          "type": "string"
+        },
+        "q4": {
+          "type": "string"
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "x",
+          "y"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "x": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "if": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "$bind"
+          ],
+          "properties": {
+            "$bind": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "type": "diagram",
+      "kind": "quadrant",
+      "axes": {
+        "x": {
+          "low": "不紧急",
+          "high": "紧急"
+        },
+        "y": {
+          "low": "不重要",
+          "high": "重要"
+        }
+      },
+      "quadrants": {
+        "q1": "重要紧急",
+        "q2": "重要不紧急",
+        "q3": "不重要不紧急",
+        "q4": "不重要紧急"
+      },
+      "items": [
+        {
+          "label": "客户故障",
+          "x": 0.9,
+          "y": 0.85
+        },
+        {
+          "label": "战略规划",
+          "x": 0.2,
+          "y": 0.9
+        },
+        {
+          "label": "回邮件",
+          "x": 0.8,
+          "y": 0.2
+        },
+        {
+          "label": "刷推",
+          "x": 0.1,
+          "y": 0.1
+        }
+      ]
+    }
+  ]
+}

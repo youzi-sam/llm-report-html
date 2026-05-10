@@ -1,0 +1,45 @@
+{
+  "kind": "encoding",
+  "binds": "paragraph",
+  "fields": [
+    "text"
+  ],
+  "usage": "散文段落，body 支持 inline markdown",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "text"
+    ],
+    "properties": {
+      "text": {
+        "type": "string"
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "text": "**Cloudflare** 成立于 2009 年，总部位于旧金山。"
+    }
+  ]
+}

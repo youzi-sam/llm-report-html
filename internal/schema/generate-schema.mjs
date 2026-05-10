@@ -1,23 +1,53 @@
-import { readFileSync, writeFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { basename, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
+const manifestSourceDir = resolve(here, 'manifest-src')
 const manifestPath = resolve(here, 'manifest.json')
 const schemaPath = resolve(here, 'schema.json')
 
-const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+const manifest = loadManifestSource()
+const manifestBody = JSON.stringify(manifest, null, 2) + '\n'
 const generated = buildSchema(manifest)
-const body = JSON.stringify(generated, null, 2) + '\n'
+const schemaBody = JSON.stringify(generated, null, 2) + '\n'
 
 if (process.argv.includes('--check')) {
-  const current = readFileSync(schemaPath, 'utf8')
-  if (current !== body) {
+  const currentManifest = readFileSync(manifestPath, 'utf8')
+  const currentSchema = readFileSync(schemaPath, 'utf8')
+  if (currentManifest !== manifestBody) {
+    console.error('internal/schema/manifest.json is stale; run `make schema`.')
+    process.exit(1)
+  }
+  if (currentSchema !== schemaBody) {
     console.error('internal/schema/schema.json is stale; run `make schema`.')
     process.exit(1)
   }
 } else {
-  writeFileSync(schemaPath, body)
+  writeFileSync(manifestPath, manifestBody)
+  writeFileSync(schemaPath, schemaBody)
+}
+
+function loadManifestSource() {
+  const base = readJson(resolve(manifestSourceDir, 'base.json'))
+  return {
+    ...base,
+    surfaces: readNamedJsonDir(resolve(manifestSourceDir, 'surfaces')),
+    defs: readNamedJsonDir(resolve(manifestSourceDir, 'defs')),
+    operators: readJson(resolve(manifestSourceDir, 'operators.json')),
+  }
+}
+
+function readNamedJsonDir(dir) {
+  const entries = {}
+  for (const file of readdirSync(dir).filter(name => name.endsWith('.json')).sort()) {
+    entries[basename(file, '.json')] = readJson(resolve(dir, file))
+  }
+  return entries
+}
+
+function readJson(path) {
+  return JSON.parse(readFileSync(path, 'utf8'))
 }
 
 function buildSchema(m) {

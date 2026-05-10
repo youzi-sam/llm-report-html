@@ -1,0 +1,119 @@
+{
+  "kind": "encoding",
+  "binds": "diagram",
+  "fields": [
+    "kind",
+    "..."
+  ],
+  "usage": "结构化图形,kind=flow|sequence|quadrant|tree|state|er。AI 填字段，渲染器生成自绘 SVG。",
+  "schema": {
+    "type": "object",
+    "required": [
+      "kind"
+    ],
+    "properties": {
+      "kind": {
+        "enum": [
+          "flow",
+          "sequence",
+          "quadrant",
+          "tree",
+          "state",
+          "er"
+        ]
+      }
+    },
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "kind": {
+              "const": "flow"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        "then": {
+          "$ref": "#/$defs/diagram.flow"
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "kind": {
+              "const": "sequence"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        "then": {
+          "$ref": "#/$defs/diagram.sequence"
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "kind": {
+              "const": "quadrant"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        "then": {
+          "$ref": "#/$defs/diagram.quadrant"
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "kind": {
+              "const": "tree"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        "then": {
+          "$ref": "#/$defs/diagram.tree"
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "kind": {
+              "const": "state"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        "then": {
+          "$ref": "#/$defs/diagram.state"
+        }
+      },
+      {
+        "if": {
+          "properties": {
+            "kind": {
+              "const": "er"
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        "then": {
+          "$ref": "#/$defs/diagram.er"
+        }
+      }
+    ]
+  }
+}
