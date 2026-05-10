@@ -1,0 +1,15 @@
+@use '../tokens' as *;
+
+.mermaid-block {
+  margin: $sp-5 0;
+  text-align: center;
+  border: $bw solid var(--md-slate-200);
+  border-radius: $r-sm;
+  background: var(--md-paper);
+  padding: 12px;
+
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+}

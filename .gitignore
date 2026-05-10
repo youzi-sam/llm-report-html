@@ -1,0 +1,25 @@
+# build artifacts
+bin/
+template/dist/
+template/node_modules/
+
+# generated skill artifacts (run `make skill` to regenerate)
+.claude/skills/llm-report-html/SKILL.md
+.claude/skills/llm-report-html/references/
+.claude/skills/llm-report-html/assets/
+
+# runtime / agent-generated reports at project root
+/cf.html
+/cf.json
+/cf.md
+/report.html
+/report.json
+/report.md
+
+# generic html (cf.html etc) — but allow examples + template index.html
+*.html
+!template/index.html
+!template/dist/index.html
+
+# system
+.DS_Store

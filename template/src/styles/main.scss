@@ -1,0 +1,31 @@
+// Style entry — mirrors schema/v2.json structure.
+//
+// Loading order:
+//   tokens → theme → mixins   (foundation, no rendered output)
+//   base → meta → error       (document chrome)
+//   encodings/*               (leaf surfaces — content-bearing)
+//   layouts/*                 (container surfaces — composition)
+
+@use 'theme';
+@use 'base';
+@use 'meta';
+@use 'error';
+
+// ─── encodings (leaf surfaces) ──────────────────────────────────────────
+@use 'encodings/typography';
+@use 'encodings/list';
+@use 'encodings/table';
+@use 'encodings/timeline';
+@use 'encodings/definition';
+@use 'encodings/faq';
+@use 'encodings/callout';
+@use 'encodings/mermaid';
+@use 'encodings/image';
+@use 'encodings/input';
+@use 'encodings/stat';
+
+// ─── layouts (container surfaces) ───────────────────────────────────────
+@use 'layouts/accordion';
+@use 'layouts/tabs';
+@use 'layouts/columns';
+@use 'layouts/aside';

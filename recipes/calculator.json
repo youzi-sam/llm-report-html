@@ -1,0 +1,94 @@
+{
+  "title": "中国 2025 综合所得个税快算",
+  "subtitle": "v0.6 反应式 cell 模型 demo",
+  "author": "llm-report-html",
+  "date": "2026-05-10",
+
+  "state": {
+    "income": {
+      "type": "number",
+      "default": 360000,
+      "min": 0,
+      "max": 99999999,
+      "step": 10000,
+      "label": "年综合所得（含工资 / 奖金 / 劳务等，元）"
+    },
+    "deduction": {
+      "type": "number",
+      "default": 60000,
+      "min": 0,
+      "step": 1000,
+      "label": "起征点 + 专项附加扣除合计（元）"
+    }
+  },
+
+  "computed": {
+    "taxable": {
+      "max": [ { "-": [ {"var": "income"}, {"var": "deduction"} ] }, 0 ]
+    },
+    "tax": {
+      "progressive_bracket": [
+        {"var": "taxable"},
+        [
+          [36000,  0.03, 0],
+          [144000, 0.10, 2520],
+          [300000, 0.20, 16920],
+          [420000, 0.25, 31920],
+          [660000, 0.30, 52920],
+          [960000, 0.35, 85920],
+          [99999999, 0.45, 181920]
+        ]
+      ]
+    },
+    "after_tax": {
+      "-": [ {"var": "income"}, {"var": "tax"} ]
+    },
+    "effective_rate": {
+      "if": [ { "==": [ {"var": "income"}, 0 ] }, 0,
+              { "/": [ {"var": "tax"}, {"var": "income"} ] } ]
+    }
+  },
+
+  "sections": [
+    { "type": "callout", "kind": "info",
+      "text": "调下方两个数字看 stat 卡片实时变。底层是 JSONLogic 表达式 + 拓扑重算，没有手写 JS。" },
+
+    { "type": "heading", "level": 2, "text": "输入" },
+    { "type": "input", "bind": "income" },
+    { "type": "input", "bind": "deduction" },
+
+    { "type": "heading", "level": 2, "text": "计算结果" },
+    { "type": "columns", "items": [
+      { "sections": [
+        { "type": "stat", "label": "应纳税所得额", "value": {"$bind": "taxable"},   "format": "currency" }
+      ]},
+      { "sections": [
+        { "type": "stat", "label": "应缴个税",     "value": {"$bind": "tax"},       "format": "currency" }
+      ]},
+      { "sections": [
+        { "type": "stat", "label": "税后收入",     "value": {"$bind": "after_tax"}, "format": "currency" }
+      ]}
+    ]},
+    { "type": "stat", "label": "实际税率（综合）", "value": {"$bind": "effective_rate"}, "format": "percent" },
+
+    { "type": "details", "summary": "2025 综合所得年度税率表（点开看分段）", "sections": [
+      { "type": "table",
+        "columns": ["级数", "应纳税所得额（元）", "税率", "速算扣除数"],
+        "rows": [
+          ["1", "≤ 36,000", "3%", "0"],
+          ["2", "36,000 ~ 144,000", "10%", "2,520"],
+          ["3", "144,000 ~ 300,000", "20%", "16,920"],
+          ["4", "300,000 ~ 420,000", "25%", "31,920"],
+          ["5", "420,000 ~ 660,000", "30%", "52,920"],
+          ["6", "660,000 ~ 960,000", "35%", "85,920"],
+          ["7", "> 960,000", "45%", "181,920"]
+        ]
+      }
+    ]},
+
+    { "type": "aside", "title": "原理速记", "sections": [
+      { "type": "paragraph",
+        "text": "输入控件 → state 单元格 → JSONLogic 公式重算派生单元格 → stat 通过 `{$bind: name}` 订阅，DOM 自动刷新。整个文档由 ~80 行反应式 runtime 驱动，bundle 增量 ~10KB。" }
+    ]}
+  ]
+}

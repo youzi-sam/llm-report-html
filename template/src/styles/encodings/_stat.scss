@@ -1,0 +1,31 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+// Border drops; the surface tint alone defines the card. Label and value
+// pull together (gap 2px, line-height 1.15) so the number lands tightly
+// under its caption — chunked KPI feel.
+.stat-card {
+  background: var(--md-surface);
+  border-radius: $r-sm;
+  padding: $sp-3 $sp-4 $sp-3 - 2px;
+  margin: $sp-3 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .stat-label {
+    @include code-font;
+    color: var(--md-slate-500);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .stat-value {
+    font-size: $fs-h2;
+    font-weight: 600;
+    color: var(--md-ink);
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+  }
+}

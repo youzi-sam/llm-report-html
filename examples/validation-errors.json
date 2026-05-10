@@ -1,0 +1,16 @@
+{
+  "title": "故意构造的错误样本",
+  "sections": [
+    { "type": "callout", "kind": "blue", "text": "kind 应该是 info/warn/danger/success" },
+    { "type": "heading", "level": 7, "text": "level 超出 1-4 范围" },
+    { "type": "timeline", "items": [
+      { "date": "2009" }
+    ]},
+    { "type": "tabs", "items": [
+      { "sections": [{ "type": "paragraph", "text": "缺 label 字段" }] }
+    ]},
+    { "type": "image", "src": "/local/path.png" },
+    { "type": "callout", "kind": "info", "text": "ok", "extra_field": "不该出现" },
+    { "type": "frobnicate" }
+  ]
+}

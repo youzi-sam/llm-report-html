@@ -1,0 +1,65 @@
+:root {
+  color-scheme: light dark;
+
+  // Vibe variables (Light)
+  --md-ink: #111111;
+  --md-charcoal: #242424;
+  --md-slate-800: #2b2b2b;
+  --md-slate-700: #404040;
+  --md-slate-600: #737373;
+  --md-slate-500: #8a8a8a;
+  --md-slate-400: #a3a3a3;
+  --md-slate-300: #d4d4d4;
+  --md-slate-200: #e5e5e5;
+  --md-slate-100: #f1f1f1;
+  --md-slate-50: #f9f9f9;
+  --md-paper: #ffffff;
+  --md-shell: #ececeb;
+  --md-surface: #f9f9f9;
+  --md-hover: #f1f1f1;
+  --md-pond: #0055ff;
+  --md-pond-50: #f0f6ff;
+  --md-success: #008844;
+  --md-success-50: #edf8f2;
+  --md-warning: #946200;
+  --md-warning-50: #fff7e8;
+  --md-danger: #c7332f;
+  --md-danger-50: #fff0ef;
+
+  // Mappings for old generic variables just in case
+  --fg: var(--md-ink);
+  --bg: var(--md-shell);
+  --muted: var(--md-slate-500);
+  --accent: var(--md-pond);
+  --border: var(--md-slate-200);
+  --code-bg: var(--md-surface);
+  --emphasis-bg: var(--md-surface);
+  
+  --callout-bg: var(--md-paper);
+  --callout-border: var(--md-slate-200);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    // Vibe variables (Dark)
+    --md-ink: #f9f9f9;
+    --md-charcoal: #e5e5e5;
+    --md-slate-800: #d4d4d4;
+    --md-slate-700: #a3a3a3;
+    --md-slate-600: #8a8a8a;
+    --md-slate-500: #737373;
+    --md-slate-400: #404040;
+    --md-slate-300: #2b2b2b;
+    --md-slate-200: #242424;
+    --md-slate-100: #1a1a1a;
+    --md-slate-50: #111111;
+    --md-paper: #111111;
+    --md-shell: #0a0a0a;
+    --md-surface: #1a1a1a;
+    --md-hover: #242424;
+    --md-pond-50: rgba(0, 85, 255, 0.1);
+    --md-success-50: rgba(0, 136, 68, 0.1);
+    --md-warning-50: rgba(148, 98, 0, 0.1);
+    --md-danger-50: rgba(199, 51, 47, 0.1);
+  }
+}

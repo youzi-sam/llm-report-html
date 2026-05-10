@@ -1,0 +1,48 @@
+{
+  "title": "Cloudflare 简史",
+  "subtitle": "从 ProjectHoneypot 到 Workers 平台",
+  "author": "demo",
+  "date": "2026-05-10",
+  "sections": [
+    { "type": "callout", "kind": "info", "title": "本页是什么", "text": "由 `llm-report-html` 渲染的示例报告。所有内容来自 JSON，模板编译时 inline 全部依赖。" },
+
+    { "type": "heading", "level": 2, "text": "时间线" },
+    { "type": "timeline", "items": [
+      { "date": "2004", "text": "Matthew Prince、Lee Holloway 启动 **Project Honeypot**——一个识别垃圾邮件爬虫的协作系统。" },
+      { "date": "2009", "text": "Prince、Holloway、Michelle Zatlyn 在哈佛商学院创立 Cloudflare。" },
+      { "date": "2010", "text": "TechCrunch Disrupt 上正式发布。" },
+      { "date": "2014", "text": "Universal SSL：免费用户也能开 HTTPS。" },
+      { "date": "2017", "text": "推出 **Cloudflare Workers**——边缘计算平台。" },
+      { "date": "2019", "text": "纽交所上市（NET）。" },
+      { "date": "2021", "text": "**R2** 对象存储发布，对标 S3 但去除出口费。" },
+      { "date": "2024", "text": "AI Gateway、Workers AI 等 AI 相关产品矩阵发布。" }
+    ]},
+
+    { "type": "heading", "level": 2, "text": "产品矩阵" },
+    { "type": "table",
+      "columns": ["产品", "类别", "首发年份"],
+      "rows": [
+        ["CDN", "网络", "2010"],
+        ["Universal SSL", "安全", "2014"],
+        ["Workers", "边缘计算", "2017"],
+        ["R2", "存储", "2021"],
+        ["D1", "数据库", "2022"],
+        ["Workers AI", "AI 推理", "2024"]
+      ]
+    },
+
+    { "type": "heading", "level": 2, "text": "技术架构演进" },
+    { "type": "mermaid", "code": "flowchart LR\n  A[反向代理 + DDoS 防护] --> B[CDN 网络]\n  B --> C[边缘 Workers]\n  C --> D[R2 / D1 / KV]\n  C --> E[Workers AI]\n  D --> F[完整边缘平台]\n  E --> F" },
+
+    { "type": "details", "summary": "为什么 Workers 重要", "sections": [
+      { "type": "paragraph", "text": "Workers 把执行从中心机房推到边缘节点，使用 V8 isolate 而非容器，冷启动从秒级降到毫秒级。这一选择决定了后续 R2/D1/AI 都构建在 isolate 模型之上，而不是另起一套 runtime。" },
+      { "type": "quote", "text": "We bet on isolates instead of containers. Everything since flows from that choice.", "by": "Kenton Varda" }
+    ]},
+
+    { "type": "heading", "level": 2, "text": "示例：Worker 代码" },
+    { "type": "code", "lang": "javascript", "code": "export default {\n  async fetch(req) {\n    return new Response('hello from edge')\n  }\n}" },
+
+    { "type": "hr" },
+    { "type": "callout", "kind": "warn", "title": "免责声明", "text": "本文由示例数据生成，时间线为简化版，详细历史以官方资料为准。" }
+  ]
+}

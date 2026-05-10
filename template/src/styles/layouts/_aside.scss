@@ -1,0 +1,25 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+.report-aside {
+  background: var(--md-surface);
+  border: $bw solid var(--md-slate-200);
+  border-radius: $r-sm;
+  padding: 12px;
+  margin-bottom: $sp-5;
+
+  &-title {
+    @include code-font;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--md-slate-500);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  p {
+    font-size: $fs-small;
+    margin: 0;
+  }
+}

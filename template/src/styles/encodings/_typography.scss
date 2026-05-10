@@ -1,0 +1,81 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+// headings
+h1, h2, h3, h4 {
+  color: var(--md-ink);
+  margin-top: $sp-6;
+  margin-bottom: $sp-4;
+  font-weight: 600;
+}
+h1 { font-size: $fs-h1; margin-top: 0; margin-bottom: $sp-2; line-height: 1.2; }
+h2 {
+  font-size: $fs-h2;
+  border-bottom: $bw solid var(--md-slate-200);
+  padding-bottom: 6px;
+}
+h3 { font-size: $fs-h3; }
+h4 { font-size: $fs-h4; }
+
+// paragraph
+p { margin: 0 0 $sp-4; }
+
+// quote
+blockquote {
+  margin: $sp-5 0;
+  padding: 4px 16px;
+  border-left: 3px solid var(--md-slate-300);
+  color: var(--md-slate-600);
+  font-size: $fs-small;
+  line-height: 1.6;
+
+  > p { margin: 0; }
+
+  > footer {
+    margin-top: 8px;
+    @include code-font;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--md-slate-500);
+  }
+}
+
+// code
+code {
+  @include code-font;
+  font-size: 12px;
+  color: var(--md-ink);
+}
+
+p code, li code {
+  background: var(--md-surface);
+  border: 1px solid var(--md-slate-200);
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: var(--md-pond);
+  font-size: 12px;
+}
+
+pre {
+  background: var(--md-surface);
+  border: 1px solid var(--md-slate-200);
+  border-radius: $r-sm;
+  padding: 12px;
+  overflow-x: auto;
+  margin-bottom: $sp-4;
+
+  code {
+    background: transparent;
+    padding: 0;
+    border: none;
+    color: var(--md-ink);
+  }
+}
+
+// divider
+hr {
+  border: none;
+  border-top: $bw solid var(--md-slate-200);
+  margin: $sp-6 0;
+}

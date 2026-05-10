@@ -1,0 +1,64 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+// Seamless FAQ list: a single top + bottom rule frames the group, hairlines
+// between siblings (1px) replace per-item rounded boxes. Open state shows a
+// soft surface tint instead of a heavy border treatment.
+.faq {
+  border-top:    $bw solid var(--md-slate-200);
+  border-bottom: $bw solid var(--md-slate-200);
+  margin-bottom: $sp-5;
+
+  details {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+
+    &:not(:last-child) {
+      border-bottom: $bw solid var(--md-slate-200);
+    }
+  }
+
+  summary {
+    padding: 10px 14px;
+    cursor: pointer;
+    list-style: none;
+    @include code-font;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--md-slate-700);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    &::-webkit-details-marker { display: none; }
+    &::after {
+      content: '▼';
+      font-size: 9px;
+      color: var(--md-slate-400);
+      transition: transform 0.2s;
+    }
+
+    &:hover { color: var(--md-ink); }
+  }
+
+  details[open] {
+    background: var(--md-surface);
+
+    summary {
+      color: var(--md-ink);
+
+      &::after { transform: rotate(180deg); }
+    }
+
+    > *:not(summary) {
+      padding: 10px 14px 14px;
+      font-size: $fs-small;
+      color: var(--md-charcoal);
+    }
+
+    > *:not(summary) > :first-child { margin-top: 0; }
+    > *:not(summary) > :last-child  { margin-bottom: 0; }
+  }
+}

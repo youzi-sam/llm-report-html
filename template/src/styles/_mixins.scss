@@ -1,0 +1,15 @@
+@use 'tokens' as *;
+
+@mixin font-stack {
+  font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+@mixin code-font {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+
+// For interactions
+@mixin focus-ring {
+  outline: 2px solid var(--md-pond);
+  outline-offset: 2px;
+}

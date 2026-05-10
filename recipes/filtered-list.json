@@ -1,0 +1,51 @@
+{
+  "title": "<演示：可筛选的 N+1 列表>",
+  "subtitle": "v0.9 array binding + section.if demo",
+
+  "state": {
+    "min_score": { "type": "number", "default": 70, "min": 0, "max": 100, "step": 5, "label": "分数下限" },
+    "show_summary": { "type": "boolean", "default": true, "label": "显示摘要" }
+  },
+
+  "computed": {
+    "filtered": {
+      "filter": [
+        [
+          {"name": "Alice", "score": 92},
+          {"name": "Bob",   "score": 78},
+          {"name": "Cathy", "score": 65},
+          {"name": "Dan",   "score": 88},
+          {"name": "Eve",   "score": 71},
+          {"name": "Frank", "score": 54}
+        ],
+        { ">=": [{"var": "score"}, {"var": "../min_score"}] }
+      ]
+    },
+    "candidates": {
+      "map": [
+        {"var": "filtered"},
+        {"cat": [{"var": "name"}, " — ", {"var": "score"}, " 分"]}
+      ]
+    },
+    "passing_count": { "reduce": [{"var": "filtered"}, {"+": [1, {"var": "accumulator"}]}, 0] }
+  },
+
+  "sections": [
+    { "type": "callout", "kind": "info",
+      "text": "调下方滑块 → 列表实时过滤；勾选/取消 → 摘要 callout 整块出现/消失。" },
+
+    { "type": "input", "bind": "min_score" },
+    { "type": "input", "bind": "show_summary" },
+
+    { "type": "callout", "kind": "success", "title": "通过人数",
+      "text": "**{$bind:passing_count}** 人达到 {$bind:min_score} 分以上",
+      "if": { "$bind": "show_summary" } },
+
+    { "type": "heading", "level": 2, "text": "通过名单" },
+    { "type": "list", "ordered": true, "items": { "$bind": "candidates" } },
+
+    { "type": "aside", "title": "降级行为", "if": { "$bind": "show_summary" }, "sections": [
+      { "type": "paragraph", "text": "Markdown 渲染时：array binding 显示占位 `<candidates>`；`section.if` 用 state default 决定显示或跳过。" }
+    ]}
+  ]
+}

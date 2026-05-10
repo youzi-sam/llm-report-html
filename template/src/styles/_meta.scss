@@ -1,0 +1,13 @@
+@use 'tokens' as *;
+@use 'mixins' as *;
+
+.report-meta {
+  @include code-font;
+  font-size: 10px;
+  color: var(--md-slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: $sp-6;
+  display: flex;
+  gap: 8px;
+}

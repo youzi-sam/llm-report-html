@@ -1,0 +1,24 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+figure {
+  margin: $sp-5 0;
+  text-align: center;
+  border: $bw solid var(--md-slate-200);
+  border-radius: $r-sm;
+  background: var(--md-surface);
+  padding: 12px;
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: $r-xs;
+  }
+
+  figcaption {
+    margin-top: $sp-2;
+    @include code-font;
+    color: var(--md-slate-500);
+    font-size: 10px;
+  }
+}

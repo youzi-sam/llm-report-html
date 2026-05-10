@@ -1,0 +1,13 @@
+@use 'tokens' as *;
+@use 'mixins' as *;
+
+.report-error {
+  border: $bw solid var(--md-danger);
+  background: var(--md-danger-50);
+  padding: $sp-2 $sp-4;
+  border-radius: $r-sm;
+  @include code-font;
+  font-size: $fs-small;
+  color: var(--md-danger);
+  margin: $sp-4 0;
+}

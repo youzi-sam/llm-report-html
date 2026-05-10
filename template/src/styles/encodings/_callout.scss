@@ -1,0 +1,56 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+.callout {
+  border: $bw solid var(--md-slate-200);
+  border-radius: $r-sm;
+  background: var(--md-paper);
+  overflow: hidden;
+  margin-bottom: $sp-4;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+
+  &-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: $fs-small;
+    font-weight: 600;
+    color: var(--md-ink);
+    border-bottom: $bw solid var(--md-slate-200);
+    background: var(--md-surface);
+
+    &::before {
+      content: "!";
+      @include code-font;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: var(--md-hover);
+      color: var(--md-slate-700);
+      font-weight: 700;
+    }
+  }
+
+  // Body slot: ensure first/last children have zero outer margins so the
+  // 12px padding looks symmetric regardless of how many <p> markdown emits.
+  & > div:last-child {
+    padding: 12px;
+    font-size: $fs-small;
+
+    > :first-child { margin-top: 0; }
+    > :last-child  { margin-bottom: 0; }
+  }
+
+  &.info .callout-title { background: var(--md-pond-50); border-bottom-color: rgba(0, 85, 255, 0.1); }
+  &.info .callout-title::before { content: "INFO"; background: var(--md-pond); color: #fff; }
+  
+  &.warn .callout-title { background: var(--md-warning-50); border-bottom-color: rgba(148, 98, 0, 0.1); }
+  &.warn .callout-title::before { content: "WARN"; background: var(--md-warning); color: #fff; }
+  
+  &.danger .callout-title { background: var(--md-danger-50); border-bottom-color: rgba(199, 51, 47, 0.1); }
+  &.danger .callout-title::before { content: "ERR"; background: var(--md-danger); color: #fff; }
+  
+  &.success .callout-title { background: var(--md-success-50); border-bottom-color: rgba(0, 136, 68, 0.1); }
+  &.success .callout-title::before { content: "OK"; background: var(--md-success); color: #fff; }
+}

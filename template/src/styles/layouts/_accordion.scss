@@ -1,0 +1,49 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+details {
+  background: var(--md-surface);
+  border: $bw solid var(--md-slate-200);
+  border-radius: $r-sm;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+summary {
+  @include code-font;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &:hover { background: var(--md-hover); }
+
+  &::-webkit-details-marker { display: none; }
+
+  &::after {
+    content: '▼';
+    font-size: 9px;
+    color: var(--md-slate-500);
+    transition: transform 0.2s;
+  }
+}
+
+details[open] {
+  summary {
+    border-bottom: $bw solid var(--md-slate-200);
+    background: var(--md-paper);
+
+    &::after { transform: rotate(180deg); }
+  }
+}
+
+details > *:not(summary) {
+  padding: 12px;
+  margin: 0;
+  background: var(--md-paper);
+  font-size: $fs-small;
+}

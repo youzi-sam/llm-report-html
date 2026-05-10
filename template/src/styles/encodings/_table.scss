@@ -1,0 +1,32 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+// Strip the outer rounded frame and vertical separators. Tables read like
+// financial statements: only horizontal rules, header in lighter monospace.
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: $sp-5 0;
+  font-size: $fs-small;
+}
+
+th, td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: $bw solid var(--md-slate-200);
+  vertical-align: top;
+}
+
+th {
+  @include code-font;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--md-slate-500);
+  background: transparent;
+  border-bottom: $bw solid var(--md-slate-300);
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover         { background: var(--md-hover); }
