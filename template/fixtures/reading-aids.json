@@ -1,0 +1,34 @@
+{
+  "title": "Reading Aids Smoke",
+  "subtitle": "TOC, source JSON, and code highlighting",
+  "sections": [
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Overview"
+    },
+    {
+      "type": "paragraph",
+      "text": "The report builds navigation from rendered headings."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Implementation"
+    },
+    {
+      "type": "code",
+      "lang": "go",
+      "code": "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}"
+    },
+    {
+      "type": "heading",
+      "level": 3,
+      "text": "Details"
+    },
+    {
+      "type": "paragraph",
+      "text": "The JSON control reuses the embedded source slot."
+    }
+  ]
+}
