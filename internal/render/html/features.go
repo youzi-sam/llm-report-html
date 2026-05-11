@@ -32,9 +32,7 @@ func AnalyzeFeatures(rawDocJSON []byte) (Features, error) {
 		diagramKinds: make(map[string]bool),
 	}
 	if m, ok := root.(map[string]any); ok {
-		if computed, ok := m["computed"].(map[string]any); ok && len(computed) > 0 {
-			set.formulas = true
-		}
+		set.formulas = hasComputedCells(m["cells"])
 	}
 	set.walk(root)
 
@@ -44,6 +42,23 @@ func AnalyzeFeatures(rawDocJSON []byte) (Features, error) {
 		Reactive:     set.inputs || set.bindings,
 		Formulas:     set.formulas && (set.inputs || set.bindings),
 	}, nil
+}
+
+func hasComputedCells(raw any) bool {
+	cells, ok := raw.(map[string]any)
+	if !ok {
+		return false
+	}
+	for _, rawCell := range cells {
+		cell, ok := rawCell.(map[string]any)
+		if !ok {
+			continue
+		}
+		if kind, _ := cell["kind"].(string); kind == "computed" {
+			return true
+		}
+	}
+	return false
 }
 
 func (f *featureSet) walk(v any) {

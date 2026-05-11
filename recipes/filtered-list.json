@@ -1,51 +1,83 @@
 {
   "title": "<演示：可筛选的 N+1 列表>",
-  "subtitle": "v0.9 array binding + section.if demo",
+  "subtitle": "array binding + section.if + JS operator modules demo",
 
-  "state": {
-    "min_score": { "type": "number", "default": 70, "min": 0, "max": 100, "step": 5, "label": "分数下限" },
-    "show_summary": { "type": "boolean", "default": true, "label": "显示摘要" }
+  "runtime": {
+    "operators": [
+      "./runtime/passingCandidates.mjs",
+      "./runtime/passingCount.mjs"
+    ]
   },
 
-  "computed": {
-    "filtered": {
-      "filter": [
-        [
-          {"name": "Alice", "score": 92},
-          {"name": "Bob",   "score": 78},
-          {"name": "Cathy", "score": 65},
-          {"name": "Dan",   "score": 88},
-          {"name": "Eve",   "score": 71},
-          {"name": "Frank", "score": 54}
-        ],
-        { ">=": [{"var": "score"}, {"var": "../min_score"}] }
-      ]
+  "cells": {
+    "min_score": {
+      "kind": "input",
+      "type": "number",
+      "default": 70,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "label": "分数下限"
+    },
+    "show_summary": {
+      "kind": "input",
+      "type": "boolean",
+      "default": true,
+      "label": "显示摘要"
     },
     "candidates": {
-      "map": [
-        {"var": "filtered"},
-        {"cat": [{"var": "name"}, " — ", {"var": "score"}, " 分"]}
-      ]
+      "kind": "computed",
+      "type": "array",
+      "expr": {
+        "call": "passingCandidates",
+        "args": [
+          { "cell": "min_score" }
+        ]
+      }
     },
-    "passing_count": { "reduce": [{"var": "filtered"}, {"+": [1, {"var": "accumulator"}]}, 0] }
+    "passing_count": {
+      "kind": "computed",
+      "type": "number",
+      "expr": {
+        "call": "passingCount",
+        "args": [
+          { "cell": "min_score" }
+        ]
+      }
+    }
   },
 
   "sections": [
-    { "type": "callout", "kind": "info",
-      "text": "调下方滑块 → 列表实时过滤；勾选/取消 → 摘要 callout 整块出现/消失。" },
+    {
+      "type": "callout",
+      "kind": "info",
+      "text": "调下方滑块 → 列表实时过滤；勾选/取消 → 摘要 callout 整块出现/消失。名单计算在 JS operator module 中。"
+    },
 
     { "type": "input", "bind": "min_score" },
     { "type": "input", "bind": "show_summary" },
 
-    { "type": "callout", "kind": "success", "title": "通过人数",
+    {
+      "type": "callout",
+      "kind": "success",
+      "title": "通过人数",
       "text": "**{$bind:passing_count}** 人达到 {$bind:min_score} 分以上",
-      "if": { "$bind": "show_summary" } },
+      "if": { "$bind": "show_summary" }
+    },
 
     { "type": "heading", "level": 2, "text": "通过名单" },
     { "type": "list", "ordered": true, "items": { "$bind": "candidates" } },
 
-    { "type": "aside", "title": "降级行为", "if": { "$bind": "show_summary" }, "sections": [
-      { "type": "paragraph", "text": "Markdown 渲染时：array binding 显示占位 `<candidates>`；`section.if` 用 state default 决定显示或跳过。" }
-    ]}
+    {
+      "type": "aside",
+      "title": "静态边界",
+      "if": { "$bind": "show_summary" },
+      "sections": [
+        {
+          "type": "paragraph",
+          "text": "渲染产物仍然是自包含 HTML；operator module 在 render 阶段经过 contract/test 校验后内联进页面。"
+        }
+      ]
+    }
   ]
 }

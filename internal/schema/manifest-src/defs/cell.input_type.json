@@ -1,0 +1,8 @@
+{
+  "enum": [
+    "number",
+    "text",
+    "boolean",
+    "select"
+  ]
+}

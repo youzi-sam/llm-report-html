@@ -5,7 +5,7 @@
     "bind",
     "label"
   ],
-  "usage": "UI 控件（绑定到 state cell）",
+  "usage": "UI 控件（绑定到 cells.<name> input cell）",
   "schema": {
     "type": "object",
     "additionalProperties": false,

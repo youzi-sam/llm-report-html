@@ -8,7 +8,7 @@ The CLI exposes the generated machine-readable schema. External code that consum
 llm-report-html schema --json | npx -y json-schema-to-typescript > types.d.ts
 ```
 
-You get one `Document` interface plus per-surface `Section_Heading`, `Section_Callout`, `Section_Tabs`, etc., as a discriminated union on `type`. State / computed cells are `Record<string, ...>`.
+You get one `Document` interface plus per-surface `Section_Heading`, `Section_Callout`, `Section_Tabs`, etc., as a discriminated union on `type`. Cells are a discriminated `Record<string, input | computed>` map.
 
 ## Python
 

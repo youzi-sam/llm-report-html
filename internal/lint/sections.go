@@ -67,11 +67,11 @@ func (a *analysis) checkInputBind(s map[string]interface{}, path string) {
 	if !a.requireDeclared(path+".bind", b, `references undeclared cell %q`) {
 		return
 	}
-	if kind := a.declared[b]; kind != "state" {
+	if kind := a.declared[b]; kind != "input" {
 		a.addError(
 			path+".bind",
 			"input-bind-kind",
-			fmt.Sprintf("input.bind must reference a state cell, got %s cell %q", kind, b),
+			fmt.Sprintf("input.bind must reference an input cell, got %s cell %q", kind, b),
 		)
 	}
 }

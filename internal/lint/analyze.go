@@ -13,8 +13,8 @@ type analysis struct {
 	report     Report
 }
 
-// Analyze inspects a parsed Document plus the raw root map (needed for state /
-// computed which the typed Document doesn't capture).
+// Analyze inspects a parsed Document plus the raw root map (needed for cells
+// which the typed Document doesn't capture).
 func Analyze(raw []byte) (Report, error) {
 	var root map[string]interface{}
 	if err := json.Unmarshal(raw, &root); err != nil {
@@ -26,7 +26,7 @@ func Analyze(raw []byte) (Report, error) {
 	}
 
 	a := newAnalysis(root)
-	a.analyzeComputed(getMap(root, "computed"))
+	a.analyzeCells(getMap(root, "cells"))
 	walkSections(doc.Sections, "sections", a.analyzeSection)
 	a.warnUnusedCells()
 	a.sort()
@@ -38,11 +38,12 @@ func newAnalysis(root map[string]interface{}) *analysis {
 		declared:   make(map[string]string),
 		referenced: make(map[string]bool),
 	}
-	for n := range getMap(root, "state") {
-		a.declared[n] = "state"
-	}
-	for n := range getMap(root, "computed") {
-		a.declared[n] = "computed"
+	for n, raw := range getMap(root, "cells") {
+		spec, _ := raw.(map[string]interface{})
+		kind, _ := spec["kind"].(string)
+		if kind != "" {
+			a.declared[n] = kind
+		}
 	}
 	return a
 }
@@ -65,9 +66,9 @@ func (a *analysis) requireDeclared(path, name, msg string) bool {
 }
 
 func (a *analysis) warnUnusedCells() {
-	for name, kind := range a.declared {
+	for name := range a.declared {
 		if !a.referenced[name] {
-			a.addWarning(kind+"."+name, "unused-cell", "declared but never referenced")
+			a.addWarning("cells."+name, "unused-cell", "declared but never referenced")
 		}
 	}
 }

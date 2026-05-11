@@ -25,7 +25,7 @@ If the only honest answer is "be informed", the reader didn't need a report — 
 
 - **Strong PURPOSE** → opening `callout` summarizing the action being made possible
 - **PURPOSE = decide between A/B** → `columns` of A and B with `callout` summarizing recommendation
-- **PURPOSE = compute X for me** → `state` + `computed` + `stat` (interactive)
+- **PURPOSE = compute X for me** → `cells` + `input` + `stat` + JS operator module when logic is non-trivial
 - **PURPOSE = stay informed** → reconsider; this might not need a report
 
 ---
@@ -99,7 +99,7 @@ Once you have the 20% beats, surface choice **falls out** — there's almost no 
 | Q & A pairs | `faq` |
 | Term + explanation pairs (3+) | `definition` |
 | A side-note that's true but not central | `aside` |
-| A controlled what-if | `state` + `computed` + `input` + `stat` |
+| A controlled what-if | `cells` + `input` + `stat` |
 
 **5-surface floor**: if your draft ends up using fewer than 5 distinct surface types, you compressed too little — go back to Q4 and re-cut. Default to `paragraph` after `paragraph` is the markdown trap.
 

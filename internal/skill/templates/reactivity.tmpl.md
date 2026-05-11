@@ -1,11 +1,12 @@
 # Reactive cells
 
-Two top-level fields turn a static report into a small interactive widget without any JS code.
+The top-level `cells` map turns a static report into a small interactive widget. JSON wires the cell graph; JS operator modules own non-trivial logic.
 
 ## Concepts
 
-- **`state.<name>`** — input cell. The user can type / pick / toggle this. Types: `number` / `text` / `boolean` / `select`.
-- **`computed.<name>`** — derived cell, written as a [JSONLogic](https://jsonlogic.com) expression. Reference other cells with `{"var":"name"}`.
+- **`cells.<name>` input** — user-editable cell. The user can type / pick / toggle this. Types: `number` / `text` / `boolean` / `select`.
+- **`cells.<name>` computed** — derived cell. Its `expr` is typed IR: `{ "value": ... }`, `{ "cell": "name" }`, or `{ "call": "operator", "args": [...] }`.
+- **`runtime.operators`** — relative paths to pure JS modules that export `defineOperator({ name, args, returns, pure, tests, run })`.
 - **`{"$bind": "<name>"}`** — read a cell anywhere a value is expected (`stat.value`, `list.items`, `table.rows`, `image.src`, `details.open`, …).
 - **`"…{$bind:name}…"`** — embed a cell value inside any text field (paragraph, callout, heading, summary, …).
 - **`"if": <bool | {"$bind":"name"}>`** — conditionally render any section.
@@ -16,13 +17,19 @@ Cells live in **one global namespace per document**. Two interactive widgets in 
 
 ```json
 {
-  "state":    { "x": { "type": "number", "default": 100, "min": 0 } },
-  "computed": { "y": { "*": [{"var": "x"}, 0.1] } },
+  "runtime": { "operators": ["./runtime/tax2025.mjs"] },
+  "cells": {
+    "income": { "kind": "input", "type": "number", "default": 1000, "min": 0 },
+    "tax": {
+      "kind": "computed",
+      "type": "number",
+      "expr": { "call": "tax2025", "args": [{ "cell": "income" }] }
+    }
+  },
   "sections": [
-    { "type": "input", "bind": "x" },
-    { "type": "stat",  "label": "Result", "value": {"$bind": "y"}, "format": "currency" },
-    { "type": "paragraph", "text": "x = {$bind:x}, y = {$bind:y}" },
-    { "type": "callout", "kind": "info", "text": "advanced", "if": {"$bind": "x"} }
+    { "type": "input", "bind": "income" },
+    { "type": "stat", "label": "Tax", "value": {"$bind": "tax"}, "format": "currency" },
+    { "type": "paragraph", "text": "income = {$bind:income}, tax = {$bind:tax}" }
   ]
 }
 ```
@@ -36,19 +43,36 @@ Cells live in **one global namespace per document**. Two interactive widgets in 
 | `list.items` / `table.rows` / `timeline.items` / etc. | whole-array `{$bind}` | `"items": {"$bind": "filtered"}` |
 | `details.open` / `list.ordered` (booleans) | `{$bind}` | `"open": {"$bind": "expandAll"}` |
 | `section.if` | `{$bind}` to any cell (truthy → render) | `"if": {"$bind": "showAdvanced"}` |
-| `input.bind` | special — names the state cell to wire to | `"bind": "income"` |
+| `input.bind` | special — names an input cell to wire to | `"bind": "income"` |
+
+## Operator module shape
+
+```js
+export default defineOperator({
+  name: "tax2025",
+  args: ["number"],
+  returns: "number",
+  pure: true,
+  tests: [{ args: [1000], returns: 30 }],
+  run(income) {
+    return income * 0.03
+  }
+})
+```
+
+The render gate runs the tests and rejects forbidden browser APIs before inlining the module into the HTML.
 
 ## Filtering / mapping arrays
 
-JSONLogic's scoped operators (`map`, `filter`, `reduce`, `all`, `some`, `none`) open a new variable scope. Inside, `{"var":"x"}` reads a field of the current item; `{"var":"../y"}` reaches up to the parent scope.
+Put array logic in an operator module and bind the computed array.
 
 ```json
-"computed": {
-  "filtered": {
-    "filter": [
-      [{"name":"Alice","score":92}, {"name":"Bob","score":58}],
-      { ">=": [{"var": "score"}, {"var": "../min_score"}] }
-    ]
+"cells": {
+  "min_score": { "kind": "input", "type": "number", "default": 70 },
+  "candidates": {
+    "kind": "computed",
+    "type": "array",
+    "expr": { "call": "passingCandidates", "args": [{ "cell": "min_score" }] }
   }
 }
 ```
@@ -58,6 +82,6 @@ JSONLogic's scoped operators (`map`, `filter`, `reduce`, `all`, `some`, `none`) 
 - No async / network / fetch
 - No `localStorage` / persistent state
 - No timers / animations
-- No arbitrary JS
+- No arbitrary JS inside JSON; JS is only allowed through validated operator modules
 
 If you need any of those, this is the wrong tool — see `references/mistakes.md`.

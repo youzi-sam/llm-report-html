@@ -1,8 +1,8 @@
-// Reactive runtime — turns the document's state + computed cells into a
+// Reactive runtime — turns the document's cells into a
 // dependency graph with topological recompute on input changes.
 //
 // API:
-//   initReactive(doc)            — read state/computed, init values, build graph
+//   initReactive(doc)            — read cells, init values, build graph
 //   getCell(name)                — current value
 //   getCellSpec(name)            — input cell schema (type, min, max, ...)
 //   setCell(name, value)         — write input; cascades to dependents + DOM
@@ -13,90 +13,113 @@
 // scope cells. If two calculators share the same report, they share the same
 // cell namespace.
 //
-// Higher-level binding resolution (template strings, deep object walking)
-// lives in template/src/sectionRenderer.js. Earlier per-encoding binding
-// helpers (bindTextField, resolveValue, hasTextBindings) were retired with
-// that refactor.
-import jsonLogic from 'json-logic-js'
-import { registerOperators } from './operators.js'
-
-registerOperators(jsonLogic)
-
 const state = Object.create(null)
 const formulas = Object.create(null)
 const cellSpecs = Object.create(null)
 const dependents = new Map()   // cellName -> Set<dependentName>
 const subscribers = new Map()  // cellName -> Set<fn>
+const operators = globalThis.LRH_OPERATORS || Object.create(null)
 
 export function initReactive(doc) {
-  // 1. seed input cells with defaults
-  for (const [name, spec] of Object.entries(doc.state || {})) {
-    cellSpecs[name] = spec
-    state[name] = spec.default
-  }
-  // 2. record formulas + dependency edges
-  for (const [name, formula] of Object.entries(doc.computed || {})) {
-    formulas[name] = formula
-    for (const dep of collectVars(formula)) {
-      if (!dependents.has(dep)) dependents.set(dep, new Set())
-      dependents.get(dep).add(name)
+  reset()
+  for (const [name, spec] of Object.entries(doc.cells || {})) {
+    if (spec.kind === 'input') {
+      cellSpecs[name] = spec
+      state[name] = spec.default
+    } else if (spec.kind === 'computed') {
+      formulas[name] = spec.expr
     }
   }
-  // 3. initial fixed-point compute
+  for (const [name, expr] of Object.entries(formulas)) {
+    for (const dep of collectCellRefs(expr)) {
+      ensureDependents(dep).add(name)
+    }
+  }
   recomputeAll()
 }
 
-function collectVars(expr, out = new Set()) {
-  if (Array.isArray(expr)) { for (const x of expr) collectVars(x, out); return out }
+function reset() {
+  clearObject(state)
+  clearObject(formulas)
+  clearObject(cellSpecs)
+  dependents.clear()
+  subscribers.clear()
+}
+
+function clearObject(target) {
+  for (const key of Object.keys(target)) delete target[key]
+}
+
+function ensureDependents(name) {
+  if (!dependents.has(name)) dependents.set(name, new Set())
+  return dependents.get(name)
+}
+
+function collectCellRefs(expr, out = new Set()) {
+  if (Array.isArray(expr)) {
+    for (const item of expr) collectCellRefs(item, out)
+    return out
+  }
   if (expr && typeof expr === 'object') {
-    if ('var' in expr) {
-      const v = expr.var
-      const name = Array.isArray(v) ? v[0] : v
-      if (typeof name === 'string') out.add(name.split('.')[0])
-      return out
+    if (typeof expr.cell === 'string') out.add(expr.cell)
+    if (Array.isArray(expr.args)) {
+      for (const arg of expr.args) collectCellRefs(arg, out)
     }
-    for (const v of Object.values(expr)) collectVars(v, out)
   }
   return out
 }
 
 function recomputeAll() {
-  // Repeated pass; converges in #computed iterations or fewer for any
-  // acyclic dep graph. Cycle protection: bound iterations.
-  const limit = Object.keys(formulas).length + 2
-  for (let i = 0; i < limit; i++) {
-    let changed = false
-    for (const [name, formula] of Object.entries(formulas)) {
-      const next = applyFormula(name, formula)
-      if (state[name] !== next) { state[name] = next; changed = true }
-    }
-    if (!changed) break
-    if (i === limit - 1) throw new Error('computed formulas did not converge')
+  const cache = new Set()
+  for (const name of Object.keys(formulas)) {
+    computeCell(name, cache, new Set())
   }
 }
 
-function applyFormula(name, formula) {
-  try { return jsonLogic.apply(formula, state) }
-  catch (e) {
-    throw new Error(`computed.${name}: ${e.message}`)
+function computeCell(name, cache = new Set(), stack = new Set()) {
+  if (!(name in formulas)) return state[name]
+  if (cache.has(name)) return state[name]
+  if (stack.has(name)) throw new Error(`cells.${name}: dependency cycle`)
+  stack.add(name)
+  for (const dep of collectCellRefs(formulas[name])) {
+    if (dep in formulas) computeCell(dep, cache, stack)
   }
+  try {
+    state[name] = evaluateExpr(formulas[name])
+  } catch (e) {
+    throw new Error(`cells.${name}.expr: ${e.message}`)
+  }
+  stack.delete(name)
+  cache.add(name)
+  return state[name]
+}
+
+function evaluateExpr(expr) {
+  if (!expr || typeof expr !== 'object') return undefined
+  if (Object.prototype.hasOwnProperty.call(expr, 'value')) return expr.value
+  if (typeof expr.cell === 'string') return state[expr.cell]
+  if (typeof expr.call === 'string') {
+    const op = operators[expr.call]
+    if (typeof op !== 'function') throw new Error(`operator ${expr.call} is not registered`)
+    const args = Array.isArray(expr.args) ? expr.args.map(evaluateExpr) : []
+    return op(...args)
+  }
+  return undefined
 }
 
 export function setCell(name, value) {
+  if (!cellSpecs[name]) throw new Error(`setCell requires an input cell: ${name}`)
   if (state[name] === value) return
   state[name] = value
   notify(name)
-  // cascade to dependents
   const seen = new Set()
   function recurse(n) {
     if (seen.has(n)) return
     seen.add(n)
     for (const d of dependents.get(n) || []) {
-      const next = applyFormula(d, formulas[d])
-      if (state[d] !== next) {
-        state[d] = next
-        notify(d)
-      }
+      const prev = state[d]
+      const next = computeCell(d, new Set(), new Set())
+      if (prev !== next) notify(d)
       recurse(d)
     }
   }

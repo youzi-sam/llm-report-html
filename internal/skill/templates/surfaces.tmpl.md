@@ -20,7 +20,7 @@ This document is generated from the report manifest via `schema.json`'s `x-surfa
 | Image | `image` (src must be `https://…` or `data:…`) |
 | Code block | `code` |
 | Time-anchored events | `timeline` |
-| User-typed input | `input` + a `state` cell |
+| User-typed input | `input` + a `cells.<name>` input cell |
 
 ## Switch from → to (anti-flat-markdown triggers)
 
@@ -38,7 +38,7 @@ These are the patterns that turn reports into walls of `heading + paragraph`. Ea
 | Q & A pairs (3+) | `faq` | Each Q collapsible, scannable header. |
 | Code / API call / config / regex / shell command | `code` (with `lang`) | Monospace, optional syntax highlighting; never inline backticks for >1 line. |
 | Multi-perspective same content (developer view / user view / business view) | `tabs` | One topic, three lenses. |
-| A predictive / interactive thing (calculator, converter, filter, what-if) | `state` + `computed` + `input` + `stat` | The user becomes a participant, not a reader. See `references/reactivity.md`. |
+| A predictive / interactive thing (calculator, converter, filter, what-if) | `cells` + `input` + `stat` | The user becomes a participant, not a reader. See `references/reactivity.md`. |
 | A diagram of relationships / steps / states | `diagram` | Don't try to express it in prose or ASCII art. |
 | Time-anchored events / version history / project milestones | `timeline` | Visually conveys ordering + spacing better than a numbered list. |
 | Tabular data | `table` | But if the table is "name + one-line description" without other columns, use `definition` instead. |

@@ -9,10 +9,10 @@ For Agent usage, read `.claude/skills/llm-report-html/SKILL.md` (regenerate with
 | Fact | Canonical home | Generators |
 |---|---|---|
 | Surface catalog + per-surface schema | `internal/schema/manifest-src/surfaces/*.json` | `manifest.json`, `schema.json`, skill, CLI `schema --catalog`, generated HTML runtime catalog |
-| Operator implementations | `template/src/operators.js` | — |
-| Operator metadata | `internal/schema/manifest-src/operators.json` | `manifest.json`, `schema.json`, skill, CLI `schema --operators` |
+| Cell / expression schema | `internal/schema/manifest-src/defs/cell*.json`, `expr.json` | `manifest.json`, `schema.json`, validators, skill |
+| Operator module compiler | `internal/runtimejs/` | render/validate operator gate |
 | Mistake catalog | `internal/schema/manifest-src/base.json` `presentationNotes` | `manifest.json`, `schema.json`, skill `mistakes.md` |
-| Recipes | `recipes/*.json` (Go embed) | skill `assets/recipes/` (mirrored on `make skill`) |
+| Recipes | `recipes/*.json` (Go embed) + `recipes/runtime/*.mjs` | skill `assets/recipes/` (mirrored on `make skill`) |
 | Skill framing / workflow | `internal/skill/templates/*.tmpl.md` | skill files |
 
 Touch the canonical home, run `make`, all derived artifacts update.
@@ -41,14 +41,26 @@ make clean       # remove bin/ + generated skill artifacts
 ## When adding a recipe
 
 1. Drop `recipes/<name>.json`
-2. Add description in `recipes/recipes.go` `descriptions` map
-3. `make skill` mirrors it into the skill assets
+2. If it uses computation, add pure operator modules under `recipes/runtime/` and list them in `runtime.operators`
+3. Add description in `recipes/recipes.go` `descriptions` map
+4. `make skill` mirrors it into the skill assets
 
-## When adding a JSONLogic operator
+## When adding runtime computation
 
-1. Implement in `template/src/operators.js`
-2. Add metadata entry in `internal/schema/manifest-src/operators.json` (schema + CLI consume this)
-3. `make` to rebuild
+Do not add a JSON DSL operator. Put report-specific logic in a JS module next to the report:
+
+```js
+export default defineOperator({
+  name: "tax2025",
+  args: ["number"],
+  returns: "number",
+  pure: true,
+  tests: [{ args: [1000], returns: 30 }],
+  run(income) { return income * 0.03 }
+})
+```
+
+The renderer validates contract, tests, type usage, and forbidden runtime APIs before inlining the module into the self-contained HTML.
 
 ## When adding a surface type
 

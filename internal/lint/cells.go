@@ -3,162 +3,111 @@ package lint
 import (
 	"fmt"
 	"sort"
-
-	"github.com/yansir/llm-report-html/internal/schema"
 )
 
-func (a *analysis) analyzeComputed(computed map[string]interface{}) {
+func (a *analysis) analyzeCells(cells map[string]interface{}) {
 	depGraph := make(map[string][]string)
-	for name, formula := range computed {
-		a.analyzeFormulaOperators(fmt.Sprintf("computed.%s", name), formula)
-		deps := collectVars(formula)
-		for _, d := range deps {
-			a.requireDeclared(
-				fmt.Sprintf("computed.%s", name),
-				d,
-				`formula references undeclared cell %q`,
-			)
+	for name, raw := range cells {
+		spec, ok := raw.(map[string]interface{})
+		if !ok {
+			continue
 		}
-		depGraph[name] = deps
+		path := fmt.Sprintf("cells.%s", name)
+		kind, _ := spec["kind"].(string)
+		switch kind {
+		case "input":
+			a.analyzeInputCell(path, spec)
+		case "computed":
+			expr := spec["expr"]
+			deps := collectCellRefs(expr)
+			for _, d := range deps {
+				a.requireDeclared(
+					path+".expr",
+					d,
+					`expression references undeclared cell %q`,
+				)
+			}
+			depGraph[name] = deps
+		}
 	}
 
 	for _, c := range detectCycles(depGraph) {
 		a.addError(
-			fmt.Sprintf("computed.%s", c),
+			fmt.Sprintf("cells.%s.expr", c),
 			"cycle",
 			"computed cell participates in a dependency cycle",
 		)
 	}
 }
 
-func (a *analysis) analyzeFormulaOperators(path string, expr interface{}) {
-	allowed := allowedJSONLogicOperators()
-	var walk func(string, interface{})
-	walk = func(p string, e interface{}) {
-		switch v := e.(type) {
-		case []interface{}:
-			for i, item := range v {
-				walk(fmt.Sprintf("%s/%d", p, i), item)
-			}
-		case map[string]interface{}:
-			if len(v) == 1 {
-				for op, args := range v {
-					if !allowed[op] {
-						a.addError(p, "unknown-operator", fmt.Sprintf("JSONLogic operator %q is not supported", op))
-					}
-					walk(p+"/"+op, args)
-				}
-				return
-			}
-			for key, value := range v {
-				walk(p+"/"+key, value)
+func (a *analysis) analyzeInputCell(path string, spec map[string]interface{}) {
+	typ, _ := spec["type"].(string)
+	value := spec["default"]
+	switch typ {
+	case "number":
+		if _, ok := value.(float64); !ok {
+			a.addError(path+".default", "cell-default-type", "number input default must be a number")
+		}
+	case "text":
+		if _, ok := value.(string); !ok {
+			a.addError(path+".default", "cell-default-type", "text input default must be a string")
+		}
+	case "boolean":
+		if _, ok := value.(bool); !ok {
+			a.addError(path+".default", "cell-default-type", "boolean input default must be a boolean")
+		}
+	case "select":
+		defaultValue, ok := value.(string)
+		if !ok {
+			a.addError(path+".default", "cell-default-type", "select input default must be a string")
+			return
+		}
+		options, _ := spec["options"].([]interface{})
+		if len(options) == 0 {
+			a.addError(path+".options", "select-options", "select input requires options")
+			return
+		}
+		found := false
+		for _, option := range options {
+			if option == defaultValue {
+				found = true
+				break
 			}
 		}
+		if !found {
+			a.addError(path+".default", "select-default", "select input default must match one of options")
+		}
 	}
-	walk(path, expr)
 }
 
-// scopedOps lists JSONLogic operators whose predicate body opens a new data
-// scope (the iterator). Inside such a body, `{"var":"x"}` references a field
-// of the current item, NOT a top-level cell. To reach a top-level cell from
-// inside, the user writes `"../x"` (one ../ per nesting level escaped).
-var scopedOps = map[string]bool{
-	"map": true, "filter": true, "reduce": true,
-	"all": true, "some": true, "none": true,
-}
-
-var jsonLogicBuiltins = map[string]bool{
-	"==": true, "===": true, "!=": true, "!==": true,
-	">": true, ">=": true, "<": true, "<=": true,
-	"!!": true, "!": true, "%": true,
-	"log": true, "in": true, "cat": true, "substr": true,
-	"+": true, "*": true, "-": true, "/": true,
-	"min": true, "max": true, "merge": true,
-	"var": true, "missing": true, "missing_some": true,
-	"if": true, "?:": true, "and": true, "or": true,
-	"filter": true, "map": true, "reduce": true,
-	"all": true, "none": true, "some": true,
-}
-
-func allowedJSONLogicOperators() map[string]bool {
-	out := make(map[string]bool, len(jsonLogicBuiltins)+len(schema.Schema().Operators))
-	for op := range jsonLogicBuiltins {
-		out[op] = true
-	}
-	for op := range schema.Schema().Operators {
-		out[op] = true
-	}
-	return out
-}
-
-func collectVars(expr interface{}) []string {
+func collectCellRefs(expr interface{}) []string {
 	seen := make(map[string]bool)
-	var walk func(e interface{}, depth int)
-	walk = func(e interface{}, depth int) {
+	var walk func(interface{})
+	walk = func(e interface{}) {
 		switch v := e.(type) {
 		case []interface{}:
-			for _, x := range v {
-				walk(x, depth)
+			for _, item := range v {
+				walk(item)
 			}
 		case map[string]interface{}:
-			for k, val := range v {
-				switch {
-				case k == "var":
-					var name string
-					switch n := val.(type) {
-					case string:
-						name = n
-					case []interface{}:
-						if len(n) > 0 {
-							if s, ok := n[0].(string); ok {
-								name = s
-							}
-						}
-					}
-					if name == "" {
-						continue
-					}
-					up := 0
-					for len(name) >= 3 && name[:3] == "../" {
-						name = name[3:]
-						up++
-					}
-					if up >= depth {
-						seen[firstSegment(name)] = true
-					}
-				case scopedOps[k]:
-					args, _ := val.([]interface{})
-					if len(args) >= 1 {
-						walk(args[0], depth)
-					}
-					if len(args) >= 2 {
-						walk(args[1], depth+1)
-					}
-					if len(args) >= 3 {
-						walk(args[2], depth)
-					}
-				default:
-					walk(val, depth)
+			if name, ok := v["cell"].(string); ok {
+				seen[name] = true
+			}
+			if args, ok := v["args"].([]interface{}); ok {
+				for _, arg := range args {
+					walk(arg)
 				}
 			}
 		}
 	}
-	walk(expr, 0)
+	walk(expr)
+
 	out := make([]string, 0, len(seen))
 	for k := range seen {
 		out = append(out, k)
 	}
 	sort.Strings(out)
 	return out
-}
-
-func firstSegment(s string) string {
-	for i := 0; i < len(s); i++ {
-		if s[i] == '.' {
-			return s[:i]
-		}
-	}
-	return s
 }
 
 func detectCycles(graph map[string][]string) []string {

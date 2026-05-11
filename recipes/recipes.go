@@ -1,8 +1,8 @@
 // Package recipes embeds two CASE STUDIES — not templates — for techniques
 // that can't be conveyed in prose alone:
 //
-//   - calculator    state + computed + JSONLogic + progressive_bracket operator
-//   - filtered-list array binding + section.if + scoped JSONLogic (map/filter/reduce)
+//   - calculator    cells + JS operator modules + typed expr calls
+//   - filtered-list array binding + section.if + JS operator modules
 //
 // Read these to learn the technique. Do NOT copy their structure for unrelated
 // content (e.g. an essay or comparison) — that produces formulaic output. For
@@ -46,8 +46,8 @@ func Show(name string) ([]byte, error) {
 // these are case studies for technique learning, not copy-paste templates.
 func Description(name string) string {
 	descriptions := map[string]string{
-		"calculator":    "case study: state + computed + JSONLogic operator (READ for technique; do NOT copy structure)",
-		"filtered-list": "case study: array binding + section.if + scoped JSONLogic (READ for technique; do NOT copy structure)",
+		"calculator":    "case study: cells + JS operator modules (READ for technique; do NOT copy structure)",
+		"filtered-list": "case study: array binding + section.if + JS operator modules (READ for technique; do NOT copy structure)",
 	}
 	if d, ok := descriptions[name]; ok {
 		return d

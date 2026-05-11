@@ -29,8 +29,10 @@ func TestAnalyzeFeaturesCollectsSurfacesAndDiagramKinds(t *testing.T) {
 
 func TestAnalyzeFeaturesMarksReactiveOnlyWhenVisibleRuntimeNeedsIt(t *testing.T) {
 	features, err := AnalyzeFeatures([]byte(`{
-		"state": {"unused": {"type": "number", "default": 1}},
-		"computed": {"unused_formula": {"+": [1, 2]}},
+		"cells": {
+			"unused": {"kind": "input", "type": "number", "default": 1},
+			"unused_formula": {"kind": "computed", "type": "number", "expr": {"value": 3}}
+		},
 		"sections": [{"type": "paragraph", "text": "static"}]
 	}`))
 	if err != nil {
@@ -41,8 +43,10 @@ func TestAnalyzeFeaturesMarksReactiveOnlyWhenVisibleRuntimeNeedsIt(t *testing.T)
 	}
 
 	features, err = AnalyzeFeatures([]byte(`{
-		"state": {"income": {"type": "number", "default": 1}},
-		"computed": {"tax": {"*": [{"var": "income"}, 0.1]}},
+		"cells": {
+			"income": {"kind": "input", "type": "number", "default": 1},
+			"tax": {"kind": "computed", "type": "number", "expr": {"call": "tax2025", "args": [{"cell": "income"}]}}
+		},
 		"sections": [
 			{"type": "input", "bind": "income"},
 			{"type": "stat", "value": {"$bind": "tax"}}

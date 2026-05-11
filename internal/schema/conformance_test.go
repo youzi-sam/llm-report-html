@@ -57,25 +57,6 @@ func TestEverySchemaSurfaceHasHTMLImplementation(t *testing.T) {
 	}
 }
 
-func TestSchemaOperatorsMatchJSImplementations(t *testing.T) {
-	operatorsJS := readRepoFile(t, "template", "src", "operators.js")
-	found := map[string]bool{}
-	re := regexp.MustCompile(`add_operation\(['"]([^'"]+)['"]`)
-	for _, m := range re.FindAllStringSubmatch(operatorsJS, -1) {
-		found[m[1]] = true
-	}
-	for name := range Schema().Operators {
-		if !found[name] {
-			t.Fatalf("schema documents operator %q but template/src/operators.js does not register it", name)
-		}
-	}
-	for name := range found {
-		if _, ok := Schema().Operators[name]; !ok {
-			t.Fatalf("template/src/operators.js registers operator %q but schema does not document it", name)
-		}
-	}
-}
-
 func readRepoFiles(t *testing.T, parts ...string) string {
 	t.Helper()
 	if len(parts)%3 != 0 {

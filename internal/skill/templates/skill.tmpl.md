@@ -1,6 +1,6 @@
 ---
 name: llm-report-html
-description: This skill should be used when the user wants a self-contained HTML report — briefing, KPI dashboard, status update, comparison, how-to tutorial, FAQ page, calculator, filtered list, or anything they will read in a browser, email, or paste in chat. The skill produces typed JSON and runs the local `llm-report-html` CLI to render a single self-contained `.html` file (feature-pruned renderer + data inlined). It NEVER reads the rendered HTML directly; use `extract` to recover source JSON. It enforces a 4-question composition worksheet BEFORE writing JSON, uses a curated surface catalog with strict JSON Schema validation, and provides JSONLogic operators for bounded interactivity instead of arbitrary code.
+description: This skill should be used when the user wants a self-contained HTML report — briefing, KPI dashboard, status update, comparison, how-to tutorial, FAQ page, calculator, filtered list, or anything they will read in a browser, email, or paste in chat. The skill produces typed JSON and runs the local `llm-report-html` CLI to render a single self-contained `.html` file (feature-pruned renderer + data inlined). It NEVER reads the rendered HTML directly; use `extract` to recover source JSON. It enforces a 4-question composition worksheet BEFORE writing JSON, uses a curated surface catalog with strict JSON Schema validation, and uses typed cells plus pure JS operator modules for bounded interactivity.
 ---
 
 # llm-report-html
@@ -90,24 +90,31 @@ Notes:
 
 ## Reactive cells (optional, for interactivity)
 
-Two top-level fields make a static report interactive without writing JS:
+One top-level `cells` map makes a static report interactive. Simple wiring stays in JSON; non-trivial computation goes into JS operator modules listed under `runtime.operators`.
 
 ```json
-"state":    { "x": { "type": "number", "default": 100 } },
-"computed": { "y": { "*": [{"var": "x"}, 0.1] } },
+"runtime": { "operators": ["./runtime/tax2025.mjs"] },
+"cells": {
+  "income": { "kind": "input", "type": "number", "default": 1000 },
+  "tax": {
+    "kind": "computed",
+    "type": "number",
+    "expr": { "call": "tax2025", "args": [{ "cell": "income" }] }
+  }
+}
 ```
 
-Reference cells with `{"$bind": "name"}` (in `stat.value`, array fields, etc.) or inline templates `"text": "Result: {$bind:y}"`. Conditional sections via `"if": {"$bind": "flag"}`. Use curated JSONLogic operators (`progressive_bracket` / `lookup_table` / `format_currency` / …) — see `references/operators.md`.
+Reference cells with `{"$bind": "name"}` (in `stat.value`, array fields, etc.) or inline templates `"text": "Result: {$bind:tax}"`. Conditional sections via `"if": {"$bind": "flag"}`. Operator modules export `defineOperator({ name, args, returns, pure, tests, run })` and are validated before render.
 
 Two case studies (read for technique; do NOT copy structure):
-- `llm-report-html recipe show calculator` — state + computed + progressive_bracket
-- `llm-report-html recipe show filtered-list` — array binding + section.if + scoped JSONLogic
+- `assets/recipes/calculator.json` — cells + JS tax operators
+- `assets/recipes/filtered-list.json` — array binding + section.if + JS list operators
 
 ## References (load on-demand)
 
 - `references/composition.md` — worked examples of the 4 meta-questions; anti-patterns
 - `references/surfaces.md` — switch-from-to table; full per-surface fields + examples
-- `references/operators.md` — JSONLogic operator library
+- `references/operators.md` — JS operator module contract
 - `references/reactivity.md` — cells / bindings / conditionals / arrays
 - `references/mistakes.md` — pitfalls (diagram ids, image src, …)
 - `references/type-bindings.md` — TS / Python type generation from the schema

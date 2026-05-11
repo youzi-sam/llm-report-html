@@ -34,7 +34,6 @@ function loadManifestSource() {
     ...base,
     surfaces: readNamedJsonDir(resolve(manifestSourceDir, 'surfaces')),
     defs: readNamedJsonDir(resolve(manifestSourceDir, 'defs')),
-    operators: readJson(resolve(manifestSourceDir, 'operators.json')),
   }
 }
 
@@ -87,13 +86,26 @@ function buildSchema(m) {
       subtitle: { type: 'string' },
       author: { type: 'string' },
       date: { type: 'string' },
-      state: {
+      runtime: {
         type: 'object',
-        additionalProperties: { $ref: '#/$defs/state.cell' },
+        additionalProperties: false,
+        properties: {
+          operators: {
+            type: 'array',
+            items: {
+              type: 'string',
+              minLength: 1,
+            },
+            uniqueItems: true,
+          },
+        },
       },
-      computed: {
+      cells: {
         type: 'object',
-        additionalProperties: true,
+        propertyNames: {
+          pattern: '^[A-Za-z_][A-Za-z0-9_]*$',
+        },
+        additionalProperties: { $ref: '#/$defs/cell' },
       },
       sections: {
         type: 'array',
@@ -102,7 +114,6 @@ function buildSchema(m) {
       },
     },
     $defs: defs,
-    'x-jsonlogic-operators': m.operators || {},
   }
 }
 

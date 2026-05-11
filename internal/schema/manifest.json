@@ -10,7 +10,7 @@
     "image_src_constraint": "`image.src` must be `https://…` or `data:…` URI. Local paths (`file://`, `/var/...`, etc.) break the single-file deliverable promise — the rendered HTML must remain self-contained even after being moved or shared.",
     "markdown_in_text_fields": "Inline markdown (bold, italic, links) is supported in: `paragraph.text`, `callout.text`, `quote.text`, `list` items, `table` cells, `definition.def`, `faq.a`. Block-level markdown (headings, lists) inside these fields is NOT supported — use the dedicated surface for those.",
     "additional_properties_rejected": "Every section schema is `additionalProperties: false`. Adding fields not declared in `$defs/section.<type>` fails validation. Don't try to smuggle metadata via undeclared keys; if a field is missing, file a real schema change.",
-    "section_if_visibility": "Any section may include `if`: a boolean literal or `{\"$bind\":\"cell\"}`. When false, HTML hides the section; Markdown skips it. The bound cell can be `state` or `computed`."
+    "section_if_visibility": "Any section may include `if`: a boolean literal or `{\"$bind\":\"cell\"}`. When false, HTML hides the section; Markdown skips it. The bound cell must be declared in `cells`."
   },
   "surfaces": {
     "aside": {
@@ -787,7 +787,7 @@
         "bind",
         "label"
       ],
-      "usage": "UI 控件（绑定到 state cell）",
+      "usage": "UI 控件（绑定到 cells.<name> input cell）",
       "schema": {
         "type": "object",
         "additionalProperties": false,
@@ -1382,6 +1382,90 @@
     }
   },
   "defs": {
+    "cell.computed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "type",
+        "expr"
+      ],
+      "properties": {
+        "kind": {
+          "const": "computed"
+        },
+        "type": {
+          "$ref": "#/$defs/cell.value_type"
+        },
+        "expr": {
+          "$ref": "#/$defs/expr"
+        }
+      }
+    },
+    "cell.input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "type",
+        "default"
+      ],
+      "properties": {
+        "kind": {
+          "const": "input"
+        },
+        "type": {
+          "$ref": "#/$defs/cell.input_type"
+        },
+        "default": {},
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number"
+        },
+        "label": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "cell.input_type": {
+      "enum": [
+        "number",
+        "text",
+        "boolean",
+        "select"
+      ]
+    },
+    "cell": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/cell.input"
+        },
+        {
+          "$ref": "#/$defs/cell.computed"
+        }
+      ]
+    },
+    "cell.value_type": {
+      "enum": [
+        "number",
+        "text",
+        "boolean",
+        "array",
+        "object"
+      ]
+    },
     "diagram.er": {
       "type": "object",
       "additionalProperties": false,
@@ -2212,6 +2296,53 @@
         }
       }
     },
+    "expr": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value"
+          ],
+          "properties": {
+            "value": {}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cell"
+          ],
+          "properties": {
+            "cell": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "call",
+            "args"
+          ],
+          "properties": {
+            "call": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/expr"
+              }
+            }
+          }
+        }
+      ]
+    },
     "list.item": {
       "anyOf": [
         {
@@ -2236,44 +2367,6 @@
           }
         }
       ]
-    },
-    "state.cell": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "type",
-        "default"
-      ],
-      "properties": {
-        "type": {
-          "enum": [
-            "number",
-            "text",
-            "boolean",
-            "select"
-          ]
-        },
-        "default": {},
-        "min": {
-          "type": "number"
-        },
-        "max": {
-          "type": "number"
-        },
-        "step": {
-          "type": "number"
-        },
-        "label": {
-          "type": "string"
-        },
-        "options": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
-        }
-      }
     },
     "value": {
       "anyOf": [
@@ -2303,161 +2396,6 @@
           }
         }
       ]
-    }
-  },
-  "operators": {
-    "progressive_bracket": {
-      "args": [
-        "value",
-        "[[ceiling, rate, deduction], ...]"
-      ],
-      "doc": "Tiered/progressive lookup (tax brackets, shipping tiers).",
-      "example": {
-        "progressive_bracket": [
-          {
-            "var": "income"
-          },
-          [
-            [
-              36000,
-              0.03,
-              0
-            ],
-            [
-              144000,
-              0.1,
-              2520
-            ]
-          ]
-        ]
-      }
-    },
-    "lookup_table": {
-      "args": [
-        "key",
-        "[[match, result], [null, default]]"
-      ],
-      "doc": "VLOOKUP-style discrete lookup. Last row with null match is the default.",
-      "example": {
-        "lookup_table": [
-          {
-            "var": "grade"
-          },
-          [
-            [
-              "A",
-              4
-            ],
-            [
-              "B",
-              3
-            ],
-            [
-              "C",
-              2
-            ],
-            [
-              null,
-              0
-            ]
-          ]
-        ]
-      }
-    },
-    "clamp": {
-      "args": [
-        "value",
-        "min",
-        "max"
-      ],
-      "doc": "Bound a value within [min, max].",
-      "example": {
-        "clamp": [
-          {
-            "var": "x"
-          },
-          0,
-          100
-        ]
-      }
-    },
-    "round": {
-      "args": [
-        "value",
-        "digits=0"
-      ],
-      "doc": "Round to N decimal digits.",
-      "example": {
-        "round": [
-          {
-            "var": "ratio"
-          },
-          2
-        ]
-      }
-    },
-    "format_currency": {
-      "args": [
-        "value",
-        "symbol='¥'",
-        "digits=2"
-      ],
-      "doc": "Format number as currency string.",
-      "example": {
-        "format_currency": [
-          {
-            "var": "price"
-          },
-          "$"
-        ]
-      }
-    },
-    "format_percent": {
-      "args": [
-        "value",
-        "digits=1"
-      ],
-      "doc": "Multiply by 100, append '%'.",
-      "example": {
-        "format_percent": [
-          {
-            "var": "rate"
-          },
-          1
-        ]
-      }
-    },
-    "format_date": {
-      "args": [
-        "value",
-        "fmt='YYYY-MM-DD'"
-      ],
-      "doc": "Format ISO date / timestamp using YYYY MM DD HH mm ss tokens.",
-      "example": {
-        "format_date": [
-          {
-            "var": "deadline"
-          },
-          "YYYY-MM-DD HH:mm"
-        ]
-      }
-    },
-    "date_diff_days": {
-      "args": [
-        "a",
-        "b"
-      ],
-      "doc": "Whole-day difference (a - b).",
-      "example": {
-        "date_diff_days": [
-          {
-            "var": "deadline"
-          },
-          {
-            "var": "today"
-          }
-        ]
-      }
     }
   }
 }

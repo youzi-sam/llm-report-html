@@ -139,9 +139,9 @@ func TestValidateEREndIDAllowed(t *testing.T) {
 	}
 }
 
-func TestValidateInputBindMustReferenceState(t *testing.T) {
+func TestValidateInputBindMustReferenceInputCell(t *testing.T) {
 	path := writeTempDoc(t, `{
-		"computed":{"x":{"+":[1,2]}},
+		"cells":{"x":{"kind":"computed","type":"number","expr":{"value":3}}},
 		"sections":[{"type":"input","bind":"x"}]
 	}`)
 	err := cmdValidate([]string{path})
@@ -152,9 +152,9 @@ func TestValidateInputBindMustReferenceState(t *testing.T) {
 
 func TestValidateComputedCycleFails(t *testing.T) {
 	path := writeTempDoc(t, `{
-		"computed":{
-			"a":{"var":"b"},
-			"b":{"var":"a"}
+		"cells":{
+			"a":{"kind":"computed","type":"number","expr":{"cell":"b"}},
+			"b":{"kind":"computed","type":"number","expr":{"cell":"a"}}
 		},
 		"sections":[{"type":"stat","label":"A","value":{"$bind":"a"}}]
 	}`)
@@ -166,18 +166,18 @@ func TestValidateComputedCycleFails(t *testing.T) {
 
 func TestValidateComputedUnknownOperatorFails(t *testing.T) {
 	path := writeTempDoc(t, `{
-		"computed":{"x":{"not_a_real_operator":[1,2]}},
+		"cells":{"x":{"kind":"computed","type":"number","expr":{"call":"not_a_real_operator","args":[{"value":1}]}}},
 		"sections":[{"type":"stat","label":"X","value":{"$bind":"x"}}]
 	}`)
 	err := cmdValidate([]string{path})
-	if err == nil || !strings.Contains(err.Error(), "unknown-operator") {
-		t.Fatalf("expected unknown-operator semantic error, got %v", err)
+	if err == nil || !strings.Contains(err.Error(), `operator "not_a_real_operator"`) {
+		t.Fatalf("expected undeclared operator validation error, got %v", err)
 	}
 }
 
 func TestValidatePresentationWarningsDoNotFail(t *testing.T) {
 	path := writeTempDoc(t, `{
-		"state":{"unused":{"type":"number","default":1}},
+		"cells":{"unused":{"kind":"input","type":"number","default":1}},
 		"sections":[{"type":"paragraph","text":"hello"}]
 	}`)
 	if err := cmdValidate([]string{path}); err != nil {

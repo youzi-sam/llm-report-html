@@ -1,0 +1,10 @@
+{
+  "oneOf": [
+    {
+      "$ref": "#/$defs/cell.input"
+    },
+    {
+      "$ref": "#/$defs/cell.computed"
+    }
+  ]
+}

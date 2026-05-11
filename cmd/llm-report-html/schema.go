@@ -46,7 +46,7 @@ func cmdSchema(args []string) error {
 	case schemaModeExamples:
 		printExamples()
 	case schemaModeOperators:
-		printOperators(s.Operators)
+		printOperators()
 	case schemaModeDoc:
 		printSchemaDoc(s)
 	}
@@ -126,19 +126,19 @@ func printExamples() {
 	}
 }
 
-func printOperators(operators map[string]schema.OperatorDef) {
-	fmt.Println("Curated JSONLogic operators (use these instead of nested if/else):")
+func printOperators() {
+	fmt.Println("Runtime operator modules:")
 	fmt.Println()
-	for _, name := range operatorList(operators) {
-		op := operators[name]
-		fmt.Printf("── %s(%s) ──\n", name, strings.Join(op.Args, ", "))
-		fmt.Printf("  %s\n", op.Doc)
-		var buf bytes.Buffer
-		if err := json.Indent(&buf, op.Example, "  ", "  "); err == nil {
-			fmt.Printf("  e.g. %s\n\n", buf.String())
-		}
-	}
-	fmt.Println("Use them in `computed.<name>` like any built-in JSONLogic op.")
+	fmt.Println(`  export default defineOperator({
+    name: "tax2025",
+    args: ["number"],
+    returns: "number",
+    pure: true,
+    tests: [{ args: [1000], returns: 30 }],
+    run(income) { return income * 0.03 }
+  })`)
+	fmt.Println()
+	fmt.Println(`Declare modules in "runtime.operators" and call them from computed cells with { "call": "tax2025", "args": [{ "cell": "income" }] }.`)
 }
 
 func printSchemaDoc(s *schema.Doc) {
@@ -146,7 +146,7 @@ func printSchemaDoc(s *schema.Doc) {
 	fmt.Println(strings.Repeat("=", 40))
 	fmt.Println()
 	fmt.Println("Top-level document:")
-	fmt.Println(`  { "title"?, "subtitle"?, "author"?, "date"?, "state"?, "computed"?, "sections": [<section>, ...] }`)
+	fmt.Println(`  { "title"?, "subtitle"?, "author"?, "date"?, "runtime"?, "cells"?, "sections": [<section>, ...] }`)
 	fmt.Println()
 	fmt.Println("CONTENT SURFACES (leaf):")
 	for _, n := range schema.SurfaceList() {
@@ -170,15 +170,6 @@ func printSchemaDoc(s *schema.Doc) {
 	}
 	fmt.Println()
 	fmt.Println("More: --catalog | --example <surface> | --examples | --operators | --json")
-}
-
-func operatorList(m map[string]schema.OperatorDef) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return keys
 }
 
 func stringMapKeys(m map[string]string) []string {

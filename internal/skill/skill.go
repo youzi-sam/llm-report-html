@@ -8,8 +8,8 @@
 // Single source of truth contract:
 //   - Surface catalog comes from internal/schema/schema.json `x-surface-catalog`
 //     plus per-surface examples in `$defs/section.<type>.examples`.
-//   - Operator catalog comes from `x-jsonlogic-operators`.
 //   - Mistakes catalog comes from `x-presentation-notes`.
+//
 // Templates live alongside this file (//go:embed templates/*.tmpl.md) and
 // have no other dependencies.
 package skill
@@ -92,7 +92,6 @@ type ctx struct {
 	RecipeCount       int
 	Encodings         []surfaceRow
 	Layouts           []surfaceRow
-	Operators         []operatorRow
 	PresentationNotes []noteRow
 }
 
@@ -101,13 +100,6 @@ type surfaceRow struct {
 	Usage   string
 	Fields  []string
 	Example string // pretty-printed JSON (no leading whitespace)
-}
-
-type operatorRow struct {
-	Name    string
-	Args    []string
-	Doc     string
-	Example string
 }
 
 type noteRow struct {
@@ -147,26 +139,6 @@ func buildContext() (*ctx, error) {
 			return nil, err
 		}
 		c.Layouts = append(c.Layouts, row)
-	}
-
-	// Operators — sorted by name
-	var opNames []string
-	for n := range s.Operators {
-		opNames = append(opNames, n)
-	}
-	sort.Strings(opNames)
-	for _, n := range opNames {
-		op := s.Operators[n]
-		ex, err := prettyJSON(op.Example)
-		if err != nil {
-			return nil, fmt.Errorf("operator %s example: %w", n, err)
-		}
-		c.Operators = append(c.Operators, operatorRow{
-			Name:    n,
-			Args:    op.Args,
-			Doc:     op.Doc,
-			Example: ex,
-		})
 	}
 
 	// Presentation notes — convert key→Body to Title→Body rows; key becomes

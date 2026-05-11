@@ -29,11 +29,20 @@ const sourceHrefMarker = "__REPORT_JSON_HREF__"
 const cssMarker = "__REPORT_CSS__"
 const runtimeMarker = "__REPORT_RUNTIME__"
 
+type Options struct {
+	SourceHref     string
+	OperatorScript string
+}
+
 func Render(rawDocJSON []byte) (string, error) {
 	return RenderWithSourceHref(rawDocJSON, "report.json")
 }
 
 func RenderWithSourceHref(rawDocJSON []byte, sourceHref string) (string, error) {
+	return RenderWithOptions(rawDocJSON, Options{SourceHref: sourceHref})
+}
+
+func RenderWithOptions(rawDocJSON []byte, opts Options) (string, error) {
 	if !strings.Contains(templateHTML, marker) {
 		return "", errors.New("template marker missing — rebuild template")
 	}
@@ -49,6 +58,9 @@ func RenderWithSourceHref(rawDocJSON []byte, sourceHref string) (string, error) 
 	if !strings.Contains(templateHTML, runtimeMarker) {
 		return "", errors.New("runtime template marker missing — rebuild template")
 	}
+	if opts.SourceHref == "" {
+		opts.SourceHref = "report.json"
+	}
 
 	source := compactJSON(rawDocJSON)
 	renderData, err := PrepareRenderData(rawDocJSON)
@@ -59,20 +71,20 @@ func RenderWithSourceHref(rawDocJSON []byte, sourceHref string) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	css, scripts, err := runtimeFor(features)
+	css, scripts, err := runtimeFor(features, opts.OperatorScript)
 	if err != nil {
 		return "", err
 	}
 
 	out := strings.Replace(templateHTML, marker, escapeForScriptTag(source), 1)
 	out = strings.Replace(out, renderMarker, escapeForScriptTag(renderData), 1)
-	out = strings.Replace(out, sourceHrefMarker, stdhtml.EscapeString(sourceHref), 1)
+	out = strings.Replace(out, sourceHrefMarker, stdhtml.EscapeString(opts.SourceHref), 1)
 	out = strings.Replace(out, cssMarker, css, 1)
 	out = strings.Replace(out, runtimeMarker, scripts, 1)
 	return out, nil
 }
 
-func runtimeFor(features Features) (string, string, error) {
+func runtimeFor(features Features, operatorScript string) (string, string, error) {
 	css, err := readAsset("assets/core.css")
 	if err != nil {
 		return "", "", err
@@ -98,6 +110,11 @@ func runtimeFor(features Features) (string, string, error) {
 	packs = append(packs, "core")
 
 	var scripts strings.Builder
+	if strings.TrimSpace(operatorScript) != "" {
+		scripts.WriteString("  <script>")
+		scripts.WriteString(escapeForScriptTag([]byte(operatorScript)))
+		scripts.WriteString("</script>\n")
+	}
 	for _, pack := range packs {
 		js, err := readAsset("assets/" + pack + ".js")
 		if err != nil {

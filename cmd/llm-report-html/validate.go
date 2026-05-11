@@ -16,7 +16,7 @@ func cmdValidate(args []string) error {
 	if err != nil {
 		return err
 	}
-	report, err := validateRaw(raw)
+	report, _, err := validateAndCompile(raw, inPath)
 	if err != nil {
 		return err
 	}

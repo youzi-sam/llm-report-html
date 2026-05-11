@@ -9,7 +9,7 @@ report.json (Agent writes)  →  llm-report-html render  →  report.html
                                                           (single file, feature-pruned)
 ```
 
-Reports are deliverables: open in a browser, attach to email, paste in chat. Optional reactive cells make them interactive without writing JS. Rendered reports include a generated TOC, a small top-right link to the sibling source JSON file, and precompiled code highlighting when `code.lang` is recognized.
+Reports are deliverables: open in a browser, attach to email, paste in chat. Optional reactive cells make them interactive; non-trivial computation lives in adjacent pure JS operator modules that are validated and inlined at render time. Rendered reports include a generated TOC, a small top-right link to the sibling source JSON file, and precompiled code highlighting when `code.lang` is recognized.
 
 ---
 
@@ -40,9 +40,8 @@ Requires Go ≥ 1.22 and Node ≥ 18.
 
 ```bash
 llm-report-html recipe list                       # browse 2 technique case studies
-llm-report-html recipe show calculator > my.json  # inspect or adapt
-llm-report-html validate my.json
-llm-report-html render   my.json -o my.html       # opens by default
+llm-report-html validate recipes/calculator.json  # validates adjacent runtime modules
+llm-report-html render   recipes/calculator.json -o my.html
 ```
 
 Modify an existing report:
@@ -77,7 +76,7 @@ schema validation failed:
 
 ## Architecture in one paragraph
 
-The Go renderer validates source JSON, derives report features, precompiles Markdown and code highlighting into render-only HTML, and then inlines only the runtime packs/CSS required by that feature set. The browser dispatcher renders each section by `type` to either a content surface (leaf, e.g., `paragraph`, `table`, `diagram`) or a layout container (e.g., `tabs`, `details`). Reactivity is present only when bindings or inputs require it. `diagram` is structured JSON rendered by first-class SVG backends; diagram runtime is selected by backend family so dagre-backed kinds share one pack instead of duplicating layout code. The original JSON remains in the `report-data` slot for `extract`; the visible `JSON` link opens the sibling source file written by the CLI. Derived render data lives separately in `report-render-data`. TOC is generated from rendered `h2`-`h4` headings.
+The Go renderer validates source JSON, validates and tests any declared JS operator modules, derives report features, precompiles Markdown and code highlighting into render-only HTML, and then inlines only the runtime packs/CSS required by that feature set. The browser dispatcher renders each section by `type` to either a content surface (leaf, e.g., `paragraph`, `table`, `diagram`) or a layout container (e.g., `tabs`, `details`). Reactivity is present only when bindings or inputs require it; typed cell expressions can read cells, literals, or call validated operators. `diagram` is structured JSON rendered by first-class SVG backends; diagram runtime is selected by backend family so dagre-backed kinds share one pack instead of duplicating layout code. The original JSON remains in the `report-data` slot for `extract`; the visible `JSON` link opens the sibling source file written by the CLI. Derived render data lives separately in `report-render-data`. TOC is generated from rendered `h2`-`h4` headings.
 
 ---
 
@@ -89,7 +88,7 @@ The Go renderer validates source JSON, derives report features, precompiles Mark
 ├── scripts/install-binary.sh          committed (install helper)
 ├── SKILL.md                           generated
 ├── references/*.md                    generated
-└── assets/recipes/*.json              generated (mirror of /recipes/)
+└── assets/recipes/                    generated (mirror of /recipes/)
 
 cmd/llm-report-html/                  CLI entry (Go)
 internal/
@@ -101,6 +100,7 @@ internal/
 ├── render/html/                       Vite-built runtime packs + HTML shell, embedded by Go
 └── lint/                              Semantic validation + presentation warnings
 recipes/*.json                         vetted technique case studies (Go-embedded)
+recipes/runtime/*.mjs                  recipe operator modules
 template/                              Vite source for the HTML renderer
 examples/                              dev fixtures
 ```
@@ -111,10 +111,10 @@ Contributor guide: `CLAUDE.md`.
 
 ## Design principles
 
-- **Data is the only input surface.** Agents and humans write JSON. They never write HTML, CSS, or JS.
+- **JSON owns report structure.** Agents and humans never write HTML or CSS. Computation beyond literal/cell wiring belongs in pure JS operator modules, not ad hoc JSON logic.
 - **HTML is the only deliverable.** Single-file, no network, no toolchain at consumption time.
 - **Manifest modules are the contract source.** All derived artifacts (manifest, schema, validators, dispatch metadata, types, skill, docs) generate from `manifest-src/`.
-- **Bounded expressiveness.** 20 surfaces, 8 JSONLogic operators, no escape hatch to arbitrary code.
+- **Bounded expressiveness.** 20 surfaces, typed cells, pure operator modules with contract tests, no raw HTML/JS escape hatch inside JSON.
 - **Single renderer.** HTML is the only deliverable. Unsupported targets fail.
 
 ---

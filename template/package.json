@@ -13,7 +13,6 @@
     "vite": "^8.0.0"
   },
   "dependencies": {
-    "@dagrejs/dagre": "^3.0.0",
-    "json-logic-js": "^2.0.5"
+    "@dagrejs/dagre": "^3.0.0"
   }
 }

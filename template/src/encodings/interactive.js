@@ -10,7 +10,7 @@ export function createInteractiveEncodings({ reactive }) {
 function renderInput(section, cells) {
   const { getCell, getCellSpec, setCell } = cells
   const spec = getCellSpec(section.bind)
-  if (!spec) return errorNode(`input.bind references undeclared state cell: ${section.bind}`)
+  if (!spec) return errorNode(`input.bind references undeclared input cell: ${section.bind}`)
   const wrap = el('div', { class: 'input-control' })
   wrap.appendChild(el('label', { for: 'cell-' + section.bind }, [text(section.label || spec.label || section.bind)]))
   let input

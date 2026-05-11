@@ -34,7 +34,7 @@ The schema is `additionalProperties: false`. The validator rejects any field not
 ### Trying to write inline JS or `<script>` tags
 
 This tool deliberately bounds expressiveness:
-- For computation: use cells + JSONLogic + curated operators (`schema --operators`).
+- For computation: use cells + pure JS operator modules (`schema --operators`).
 - For new visual elements: choose from existing surfaces; don't invent.
 
 If those don't suffice, the request likely doesn't fit this tool — it wants a different deliverable.
@@ -84,8 +84,8 @@ Use `code.lang` for recognized languages (`go`, `javascript`, `typescript`, `pyt
 
 These block both `validate` and `render`.
 
-- **undeclared-cell** — `{$bind:X}` or `input.bind` references a cell that doesn't exist in `state` or `computed`
-- **input-bind-kind** — `input.bind` references a computed cell; inputs can only write to `state`
+- **undeclared-cell** — `{$bind:X}` or `input.bind` references a cell that doesn't exist in `cells`
+- **input-bind-kind** — `input.bind` references a computed cell; inputs can only write to an input cell
 - **cycle** — computed cell A depends on B which depends on A (renderer can't break the loop)
 - **undeclared-node** — `diagram.flow` / `diagram.state` references a node id not declared in the corresponding node array
 
@@ -93,7 +93,7 @@ These block both `validate` and `render`.
 
 These are printed by `validate` but do not block render.
 
-- **unused-cell** — declared in `state` or `computed` but never read by any section
+- **unused-cell** — declared in `cells` but never read by any section
 - **trivial-layout** — `tabs` or `columns` with only 1 item; you probably want a different surface
 - **empty-container** — `details` or `aside` with no nested sections
 - **empty-callout** — `callout` with empty `text`; almost always means content was placed as a sibling and escapes the box (see "Empty-text callout" above)

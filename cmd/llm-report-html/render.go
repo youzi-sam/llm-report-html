@@ -33,7 +33,8 @@ func cmdRender(args []string) error {
 	if err != nil {
 		return err
 	}
-	if _, err := validateRaw(raw); err != nil {
+	_, operators, err := validateAndCompile(raw, opts.inPath)
+	if err != nil {
 		return err
 	}
 
@@ -49,7 +50,10 @@ func cmdRender(args []string) error {
 		if htmlPath != "" {
 			sourceHref = filepath.Base(sourceJSONPath(htmlPath))
 		}
-		out, err = htmlrender.RenderWithSourceHref(raw, sourceHref)
+		out, err = htmlrender.RenderWithOptions(raw, htmlrender.Options{
+			SourceHref:     sourceHref,
+			OperatorScript: operators.Script,
+		})
 		if err != nil {
 			return err
 		}

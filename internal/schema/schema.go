@@ -22,17 +22,10 @@ var schemaJSON []byte
 // Doc is the parsed top-level schema; only fields actually consumed by
 // validators / renderers / the skill generator are retained.
 type Doc struct {
-	Version          string                 `json:"version"`
-	SurfaceCatalog   map[string]SurfaceDef  `json:"x-surface-catalog"`
-	Operators        map[string]OperatorDef `json:"x-jsonlogic-operators"`
-	PresentationNote map[string]string      `json:"x-presentation-notes"`
-	Defs             map[string]DefEntry    `json:"$defs"`
-}
-
-type OperatorDef struct {
-	Args    []string        `json:"args"`
-	Doc     string          `json:"doc"`
-	Example json.RawMessage `json:"example"`
+	Version          string                `json:"version"`
+	SurfaceCatalog   map[string]SurfaceDef `json:"x-surface-catalog"`
+	PresentationNote map[string]string     `json:"x-presentation-notes"`
+	Defs             map[string]DefEntry   `json:"$defs"`
 }
 
 // DefEntry captures the subset of fields we read from $defs/section.<surface>.

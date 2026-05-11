@@ -1,37 +1,47 @@
-# JSONLogic operators
+# Runtime operator modules
 
-Use these instead of nested if/else. Each operator collapses many lines of conditional logic into a single high-level call.
+Use JS operator modules when JSON cell wiring is not enough. JSON should describe the report and cell dependency graph; business logic belongs in ordinary JS with a contract and tests.
 
-These operators are curated for common Agent intents. They register in `template/src/operators.js` and are documented in `internal/schema/manifest-src/operators.json`.
+## Contract
 
-## Catalog
-{{ range .Operators }}
-### `{{ .Name }}({{ range $i, $a := .Args }}{{ if $i }}, {{ end }}{{ $a }}{{ end }})`
-
-{{ .Doc }}
-
-```json
-{{ .Example }}
+```js
+export default defineOperator({
+  name: "tax2025",
+  args: ["number"],
+  returns: "number",
+  pure: true,
+  tests: [
+    { args: [1000], returns: 30 }
+  ],
+  run(income) {
+    return income * 0.03
+  }
+})
 ```
-{{ end }}
 
-## Using operators in `computed`
+Allowed contract types: `number`, `text`, `boolean`, `array`, `object`, `any`.
+
+The renderer rejects modules that use network, storage, timers, random, `Date`, DOM globals, imports, or secondary exports. Tests must pass before the operator is inlined into the HTML.
+
+## Using operators in cells
 
 ```json
 {
-  "state":    { "income": { "type": "number", "default": 360000 } },
-  "computed": {
-    "tax": { "progressive_bracket": [
-      {"var": "income"},
-      [[36000, 0.03, 0], [144000, 0.10, 2520], [300000, 0.20, 16920]]
-    ]}
+  "runtime": { "operators": ["./runtime/tax2025.mjs"] },
+  "cells": {
+    "income": { "kind": "input", "type": "number", "default": 360000 },
+    "tax": {
+      "kind": "computed",
+      "type": "number",
+      "expr": { "call": "tax2025", "args": [{ "cell": "income" }] }
+    }
   }
 }
 ```
 
 ## When operators don't suffice
 
-If high-level operators + JSONLogic together still can't express what you need, **stop and rethink the report shape** — chances are the user wants a different deliverable (a real web app, a script, a notebook), not arbitrary code in a static HTML report. This tool deliberately bounds expressiveness.
+If pure operators cannot express the interaction because it needs async, remote data, timers, persistent state, DOM mutation, or user sessions, this is the wrong deliverable. Build an app, script, or notebook instead.
 
 ## Run-time discovery
 
