@@ -48,6 +48,13 @@ try {
               isStateSvg: !!block.querySelector('svg.state-svg'),
               isERSvg: !!block.querySelector('svg.er-svg'),
               isTreeSvg: !!block.querySelector('svg.tree-svg'),
+              labelBackgroundCount: block.querySelectorAll('.labelBackground').length,
+              erHeaderRectCount: block.querySelectorAll('rect.er-svg-entity-header').length,
+              erHeaderPathCount: block.querySelectorAll('path.er-svg-entity-header').length,
+              erEntityCount: block.querySelectorAll('.er-svg-entity').length,
+              erColumnDividerCount: block.querySelectorAll('.er-svg-column-divider').length,
+              erAttributeTypeCount: block.querySelectorAll('.er-svg-attribute-type').length,
+              erAttributeNameCount: block.querySelectorAll('.er-svg-attribute-name').length,
               quadrantLabelMaxDistance: quadrantLabelMaxDistance(block),
               quadrantLabelCountMatches: quadrantLabelCountMatches(block),
               blockWidth: br.width,
@@ -81,6 +88,7 @@ function renderedDiagramFailures(smoke) {
     if (!block.hasSvg) failures.push(`diagram ${index} has no svg`)
     if (block.svgWidth <= 0 || block.svgHeight <= 0) failures.push(`diagram ${index} has empty svg geometry`)
     if (block.svgWidth > block.blockWidth + 1) failures.push(`diagram ${index} overflows block width`)
+    if (block.labelBackgroundCount > 0) failures.push(`diagram ${index} renders rectangular edge-label backgrounds`)
     if (block.cls.includes('diagram-flow') && !block.isFlowSvg) failures.push(`flow diagram ${index} did not use flow SVG backend`)
     if (block.cls.includes('diagram-sequence') && !block.isSequenceSvg) failures.push(`sequence diagram ${index} did not use sequence SVG backend`)
     if (block.cls.includes('diagram-quadrant') && !block.isQuadrantSvg) failures.push(`quadrant diagram ${index} did not use quadrant SVG backend`)
@@ -88,6 +96,10 @@ function renderedDiagramFailures(smoke) {
     if (block.cls.includes('diagram-quadrant') && block.quadrantLabelMaxDistance > 18) failures.push(`quadrant diagram ${index} label is detached from source point (${block.quadrantLabelMaxDistance.toFixed(1)}px)`)
     if (block.cls.includes('diagram-state') && !block.isStateSvg) failures.push(`state diagram ${index} did not use state SVG backend`)
     if (block.cls.includes('diagram-er') && !block.isERSvg) failures.push(`ER diagram ${index} did not use ER SVG backend`)
+    if (block.cls.includes('diagram-er') && block.erHeaderRectCount > 0) failures.push(`ER diagram ${index} renders rect headers`)
+    if (block.cls.includes('diagram-er') && block.erHeaderPathCount !== block.erEntityCount) failures.push(`ER diagram ${index} header/entity mismatch`)
+    if (block.cls.includes('diagram-er') && block.erColumnDividerCount !== block.erEntityCount * 2) failures.push(`ER diagram ${index} does not render table columns`)
+    if (block.cls.includes('diagram-er') && block.erAttributeTypeCount !== block.erAttributeNameCount) failures.push(`ER diagram ${index} attribute type/name mismatch`)
     if (block.cls.includes('diagram-tree') && !block.isTreeSvg) failures.push(`tree diagram ${index} did not use tree SVG backend`)
   }
   return failures

@@ -46,8 +46,12 @@ func codeHighlightCSS() string {
 	dark := chromaCSS("monokai")
 	return strings.TrimSpace(`
 .code-block code.ch-chroma {
+  background: transparent;
   display: block;
   min-width: max-content;
+}
+.code-block code.ch-chroma .ch-bg {
+  background: transparent;
 }
 ` + light + `
 @media (prefers-color-scheme: dark) {

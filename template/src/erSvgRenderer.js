@@ -102,24 +102,17 @@ export function countERRelationships(s) {
 function entityScene({ entity, point, size }) {
   const x = -size.width / 2
   const y = -size.height / 2
+  const bottom = y + size.height
+  const typeRight = x + size.columns.type
+  const nameRight = typeRight + size.columns.name
   const children = [
-    sceneEl('rect', {
+    sceneEl('path', {
       class: 'er-svg-entity-frame',
-      x,
-      y,
-      width: size.width,
-      height: size.height,
-      rx: 6,
-      ry: 6,
+      d: rectPath(x, y, size.width, size.height),
     }),
-    sceneEl('rect', {
+    sceneEl('path', {
       class: 'er-svg-entity-header',
-      x,
-      y,
-      width: size.width,
-      height: size.headerHeight,
-      rx: 6,
-      ry: 6,
+      d: rectPath(x, y, size.width, size.headerHeight),
     }),
     sceneEl('line', {
       class: 'er-svg-row-divider',
@@ -127,6 +120,20 @@ function entityScene({ entity, point, size }) {
       y1: y + size.headerHeight,
       x2: x + size.width,
       y2: y + size.headerHeight,
+    }),
+    sceneEl('line', {
+      class: 'er-svg-column-divider',
+      x1: typeRight,
+      y1: y + size.headerHeight,
+      x2: typeRight,
+      y2: bottom,
+    }),
+    sceneEl('line', {
+      class: 'er-svg-column-divider',
+      x1: nameRight,
+      y1: y + size.headerHeight,
+      x2: nameRight,
+      y2: bottom,
     }),
     sceneText('text', {
       class: 'er-svg-entity-title',
@@ -139,20 +146,37 @@ function entityScene({ entity, point, size }) {
 
   ;(entity.attributes || []).forEach((attribute, index) => {
     const rowY = y + size.headerHeight + index * size.rowHeight
-    children.push(sceneEl('line', {
-      class: 'er-svg-row-divider',
-      x1: x,
-      y1: rowY + size.rowHeight,
-      x2: x + size.width,
-      y2: rowY + size.rowHeight,
-    }))
-    const key = attribute.key ? `${attribute.key} ` : ''
+    if (index > 0) {
+      children.push(sceneEl('line', {
+        class: 'er-svg-row-divider',
+        x1: x,
+        y1: rowY,
+        x2: x + size.width,
+        y2: rowY,
+      }))
+    }
     children.push(sceneText('text', {
-      class: `er-svg-attribute ${attribute.key ? 'key' : ''}`,
-      x: x + 14,
+      class: 'er-svg-attribute er-svg-attribute-type',
+      x: x + size.columns.type / 2,
+      y: rowY + size.rowHeight / 2,
+      'text-anchor': 'middle',
+      'dominant-baseline': 'middle',
+    }, attribute.type || 'string'))
+    children.push(sceneText('text', {
+      class: 'er-svg-attribute er-svg-attribute-name',
+      x: typeRight + 14,
       y: rowY + size.rowHeight / 2,
       'dominant-baseline': 'middle',
-    }, `${key}${attribute.name}: ${attribute.type || 'string'}`))
+    }, attribute.name || ''))
+    if (attribute.key) {
+      children.push(sceneText('text', {
+        class: 'er-svg-attribute er-svg-attribute-key',
+        x: nameRight + size.columns.key / 2,
+        y: rowY + size.rowHeight / 2,
+        'text-anchor': 'middle',
+        'dominant-baseline': 'middle',
+      }, attribute.key))
+    }
   })
 
   return sceneEl('g', {
@@ -175,19 +199,37 @@ function erEdgeScene(edge, markerID, palette) {
 function measureEntity(entity) {
   const title = entity.label || entity.id
   const rows = entity.attributes || []
-  const rowLabels = rows.map(attribute => {
-    const key = attribute.key ? `${attribute.key} ` : ''
-    return `${key}${attribute.name}: ${attribute.type || 'string'}`
-  })
-  const maxLine = Math.max(measureLine(title), ...rowLabels.map(label => measureLine(label)), 1)
+  const columns = measureAttributeColumns(rows)
+  const tableWidth = columns.type + columns.name + columns.key
+  const titleWidth = measureLine(title) + 56
   const headerHeight = 38
-  const rowHeight = 25
+  const rowHeight = 34
+  const width = Math.max(180, tableWidth, titleWidth)
+  if (width > tableWidth) columns.name += width - tableWidth
   return {
-    width: Math.max(150, maxLine + 44),
+    width,
     height: headerHeight + Math.max(1, rows.length) * rowHeight,
     headerHeight,
     rowHeight,
+    columns,
   }
+}
+
+function measureAttributeColumns(rows) {
+  const maxType = Math.max(...rows.map(row => measureLine(row.type || 'string')), measureLine('string'))
+  const maxName = Math.max(...rows.map(row => measureLine(row.name || '')), measureLine('field'))
+  const maxKey = Math.max(...rows.map(row => measureLine(row.key || '')), measureLine('PK'))
+  return {
+    type: Math.max(74, maxType + 32),
+    name: Math.max(112, maxName + 44),
+    key: Math.max(48, maxKey + 28),
+  }
+}
+
+function rectPath(x, y, width, height) {
+  const right = x + width
+  const bottom = y + height
+  return `M ${x} ${y} H ${right} V ${bottom} H ${x} Z`
 }
 
 function relationshipLabel(relationship) {

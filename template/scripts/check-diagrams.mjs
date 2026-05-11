@@ -34,6 +34,7 @@ const svgBackends = {
     edgeSelector: '.flow-svg-edge',
     expectedNodes: section => (section.nodes || []).length,
     expectedEdges: section => (section.edges || []).length,
+    check: checkFlowAnchors,
   },
   quadrant: {
     render: renderQuadrantSvg,
@@ -82,6 +83,29 @@ for (const check of svgChecks) {
     if (backend.edgeSelector && svg.querySelectorAll(backend.edgeSelector).length !== backend.expectedEdges(check.section)) {
       throw new Error('rendered edge count does not match input edge count')
     }
+    if (svg.querySelectorAll('.labelBackground').length > 0) {
+      throw new Error('edge labels must not render rectangular backgrounds')
+    }
+    if (check.section.kind === 'er') {
+      if (svg.querySelectorAll('rect.er-svg-entity-header').length > 0) {
+        throw new Error('ER entity headers must not be rects')
+      }
+      if (svg.querySelectorAll('path.er-svg-entity-header').length !== backend.expectedNodes(check.section)) {
+        throw new Error('ER entity header count does not match entity count')
+      }
+      if (svg.querySelectorAll('.er-svg-column-divider').length !== backend.expectedNodes(check.section) * 2) {
+        throw new Error('ER entity tables must render type/name/key columns')
+      }
+      const expectedAttributes = (check.section.entities || []).reduce((sum, entity) => sum + (entity.attributes || []).length, 0)
+      if (svg.querySelectorAll('.er-svg-attribute-name').length !== expectedAttributes) {
+        throw new Error('ER attribute name count does not match input attribute count')
+      }
+      if (svg.querySelectorAll('.er-svg-attribute-type').length !== expectedAttributes) {
+        throw new Error('ER attribute type count does not match input attribute count')
+      }
+    }
+    const backendFailures = backend.check ? backend.check(svg) : []
+    if (backendFailures.length > 0) throw new Error(backendFailures.join('; '))
   } catch (e) {
     failures.push({ ...check, error: e?.message || String(e), code: JSON.stringify(check.section, null, 2) })
   }
@@ -143,4 +167,71 @@ function collectSection(section, source) {
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'))
+}
+
+function checkFlowAnchors(svg) {
+  const nodes = new Map([...svg.querySelectorAll('.flow-svg-node')].map(node => [node.getAttribute('data-node-id'), readFlowNode(node)]))
+  const failures = []
+  for (const edge of svg.querySelectorAll('.flow-svg-edge')) {
+    const path = edge.querySelector('.flow-svg-link')
+    const points = parsePathPoints(path?.getAttribute('d') || '')
+    if (points.length < 2) continue
+    const from = nodes.get(edge.getAttribute('data-from'))
+    const to = nodes.get(edge.getAttribute('data-to'))
+    if (from?.shape === 'diamond' && !pointTouchesPolygon(points[0], from.polygon)) {
+      failures.push(`flow edge leaves diamond off-boundary: ${edge.getAttribute('data-from')}`)
+    }
+    if (to?.shape === 'diamond' && !pointTouchesPolygon(points[points.length - 1], to.polygon)) {
+      failures.push(`flow edge enters diamond off-boundary: ${edge.getAttribute('data-to')}`)
+    }
+  }
+  return failures
+}
+
+function readFlowNode(node) {
+  const origin = parseTranslate(node.getAttribute('transform') || '')
+  const polygon = node.querySelector('polygon')
+  return {
+    shape: node.getAttribute('data-node-shape') || 'rect',
+    polygon: polygon ? parsePolygonPoints(polygon.getAttribute('points') || '').map(point => ({
+      x: point.x + origin.x,
+      y: point.y + origin.y,
+    })) : [],
+  }
+}
+
+function parsePathPoints(d) {
+  const values = (d.match(/-?\d+(?:\.\d+)?/g) || []).map(Number)
+  const points = []
+  for (let i = 0; i + 1 < values.length; i += 2) points.push({ x: values[i], y: values[i + 1] })
+  return points
+}
+
+function parsePolygonPoints(raw) {
+  return raw.trim().split(/\s+/).map(pair => {
+    const [x, y] = pair.split(',').map(Number)
+    return { x, y }
+  }).filter(point => Number.isFinite(point.x) && Number.isFinite(point.y))
+}
+
+function parseTranslate(raw) {
+  const match = raw.match(/translate\((-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)\)/)
+  return match ? { x: Number(match[1]), y: Number(match[2]) } : { x: 0, y: 0 }
+}
+
+function pointTouchesPolygon(point, polygon) {
+  if (polygon.length < 2) return true
+  return polygon.some((start, index) => {
+    const end = polygon[(index + 1) % polygon.length]
+    return distanceToSegment(point, start, end) <= 1.5
+  })
+}
+
+function distanceToSegment(point, start, end) {
+  const dx = end.x - start.x
+  const dy = end.y - start.y
+  const lengthSquared = dx * dx + dy * dy
+  if (lengthSquared === 0) return Math.hypot(point.x - start.x, point.y - start.y)
+  const t = Math.max(0, Math.min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared))
+  return Math.hypot(point.x - (start.x + t * dx), point.y - (start.y + t * dy))
 }

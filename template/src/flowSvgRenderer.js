@@ -1,5 +1,6 @@
 import { graphlib, layout } from '@dagrejs/dagre'
 import {
+  anchorEdgeToNodeShapes,
   measureEdgeLabel,
   measureNodeLabel,
   nextSvgID,
@@ -63,6 +64,18 @@ export function layoutFlow(s) {
   const width = Math.ceil(graphSize.width || 0)
   const height = Math.ceil(graphSize.height || 0)
   const markerID = nextSvgID('flow-svg-arrow')
+  const positionedNodes = new Map(nodes.map(node => {
+    const point = graph.node(node.id)
+    const size = metrics.get(node.id)
+    return [node.id, {
+      id: node.id,
+      shape: node.shape || 'rect',
+      x: point.x,
+      y: point.y,
+      width: size.width,
+      height: size.height,
+    }]
+  }))
   return {
     width,
     height,
@@ -73,7 +86,7 @@ export function layoutFlow(s) {
       size: metrics.get(node.id),
       role: classes.get(node.id),
     })),
-    edges: graph.edges().map(edgeRef => graph.edge(edgeRef)),
+    edges: graph.edges().map(edgeRef => anchorEdgeToNodeShapes(graph.edge(edgeRef), positionedNodes)),
   }
 }
 
@@ -96,6 +109,8 @@ export function flowToScene(layout, palette = DEFAULT_PALETTE) {
 function flowNodeScene({ node, point, size, role }) {
   return sceneEl('g', {
     class: `node flow-svg-node ${role}`,
+    'data-node-id': node.id,
+    'data-node-shape': node.shape || 'rect',
     transform: `translate(${point.x}, ${point.y})`,
   }, [
     nodeShapeScene(node.shape || 'rect', size),

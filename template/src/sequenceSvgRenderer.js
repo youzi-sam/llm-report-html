@@ -159,22 +159,11 @@ function messageScene(message, markerID, palette) {
 
 function labelScene(text, x, y) {
   const lines = wrapLabel(String(text || ''), 22)
-  const width = Math.max(34, Math.max(...lines.map(line => measureLine(line, 7.4))) + 16)
-  const height = lines.length * 16 + 8
   const startY = -((lines.length - 1) * 16) / 2
   return sceneEl('g', {
     class: 'edgeLabel sequence-svg-message-label',
     transform: `translate(${x}, ${y})`,
   }, [
-    sceneEl('rect', {
-    class: 'labelBackground',
-    x: -width / 2,
-    y: -height / 2,
-    width,
-    height,
-    rx: 4,
-    ry: 4,
-    }),
     sceneEl('text', {
     class: 'sequence-svg-message-text',
     'text-anchor': 'middle',

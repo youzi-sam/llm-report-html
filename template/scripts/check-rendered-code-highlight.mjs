@@ -17,11 +17,19 @@ try {
           const token = code.querySelector('[class^="ch-"]:not(.ch-line)')
           const tokenColor = token ? getComputedStyle(token).color : ''
           const codeColor = getComputedStyle(code).color
-          return { tokenColor, codeColor, applied: !!token && tokenColor !== codeColor }
+          const codeBackground = getComputedStyle(code).backgroundColor
+          return {
+            tokenColor,
+            codeColor,
+            codeBackground,
+            applied: !!token && tokenColor !== codeColor,
+            transparentBackground: codeBackground === 'rgba(0, 0, 0, 0)',
+          }
         })
         return {
           codeBlockCount: codeBlocks.length,
           highlightedCount: highlighted.filter(item => item.applied).length,
+          transparentBackgroundCount: highlighted.filter(item => item.transparentBackground).length,
           highlighted,
           errors: [...document.querySelectorAll('.report-error')].map(node => node.textContent),
         }
@@ -35,6 +43,9 @@ try {
   if (smoke.codeBlockCount === 0) failures.push('no code blocks rendered')
   if (smoke.highlightedCount !== smoke.codeBlockCount) {
     failures.push(`highlighted ${smoke.highlightedCount}/${smoke.codeBlockCount} code blocks`)
+  }
+  if (smoke.transparentBackgroundCount !== smoke.codeBlockCount) {
+    failures.push(`transparent code backgrounds ${smoke.transparentBackgroundCount}/${smoke.codeBlockCount}`)
   }
   if (failures.length > 0) {
     console.error(`rendered code-highlight smoke failed: ${htmlPath}`)

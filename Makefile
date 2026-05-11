@@ -1,4 +1,4 @@
-.PHONY: build template skill all install test diagram-check rendered-diagram-check reading-aids-check clean schema html
+.PHONY: build template skill all install test diagram-check rendered-diagram-check reading-aids-check code-highlight-check clean schema html
 
 BIN := bin/llm-report-html
 SCHEMA := internal/schema/schema.json
@@ -46,7 +46,7 @@ skill: build
 install: build
 	cp $(BIN) ~/.local/bin/
 
-test: build diagram-check rendered-diagram-check reading-aids-check
+test: build diagram-check rendered-diagram-check reading-aids-check code-highlight-check
 	@for r in $$($(BIN) recipe list | awk '/^  [a-z]/ {print $$1}'); do \
 	  printf '%-26s ' "recipe/$$r"; \
 	  $(BIN) recipe show $$r | $(BIN) validate 2>&1 | tail -1; \
@@ -62,6 +62,10 @@ rendered-diagram-check: build
 reading-aids-check: build
 	$(BIN) render template/fixtures/reading-aids.json -o /tmp/llm-report-html-reading-aids-smoke.html --no-open
 	node template/scripts/check-rendered-reading-aids.mjs /tmp/llm-report-html-reading-aids-smoke.html
+
+code-highlight-check: build
+	$(BIN) render template/fixtures/reading-aids.json -o /tmp/llm-report-html-code-highlight-smoke.html --no-open
+	node template/scripts/check-rendered-code-highlight.mjs /tmp/llm-report-html-code-highlight-smoke.html
 
 html: build
 	$(BIN) recipe show calculator | $(BIN) render -o report.html

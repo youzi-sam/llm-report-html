@@ -86,9 +86,11 @@ export function renderPolylineEdge(edge, opts = {}) {
     pathClass = 'path diagram-svg-link',
     labelGroupClass = 'edgeLabel diagram-svg-edge-label',
     labelTextClass = 'diagram-svg-edge-text',
-    labelBackgroundClass = 'labelBackground',
   } = opts
-  const group = svgEl('g', { class: groupClass })
+  const groupAttrs = { class: groupClass }
+  if (edge.from) groupAttrs['data-from'] = edge.from
+  if (edge.to) groupAttrs['data-to'] = edge.to
+  const group = svgEl('g', groupAttrs)
   const pathAttrs = {
     class: pathClass,
     d: pathFromPoints(edge.points || []),
@@ -101,7 +103,6 @@ export function renderPolylineEdge(edge, opts = {}) {
     group.appendChild(renderEdgeLabel(edge, {
       groupClass: labelGroupClass,
       textClass: labelTextClass,
-      backgroundClass: labelBackgroundClass,
     }))
   }
   return group
@@ -111,23 +112,11 @@ export function renderEdgeLabel(edge, opts = {}) {
   const {
     groupClass = 'edgeLabel diagram-svg-edge-label',
     textClass = 'diagram-svg-edge-text',
-    backgroundClass = 'labelBackground',
   } = opts
   const group = svgEl('g', {
     class: groupClass,
     transform: `translate(${edge.x || 0}, ${edge.y || 0})`,
   })
-  const width = Math.max(24, Number(edge.width) || 0)
-  const height = Math.max(18, Number(edge.height) || 0)
-  group.appendChild(svgEl('rect', {
-    class: backgroundClass,
-    x: -width / 2,
-    y: -height / 2,
-    width,
-    height,
-    rx: 4,
-    ry: 4,
-  }))
   const label = svgEl('text', {
     class: textClass,
     'text-anchor': 'middle',
@@ -142,6 +131,47 @@ export function pathFromPoints(points) {
   if (points.length === 0) return ''
   const [first, ...rest] = points
   return [`M ${first.x} ${first.y}`, ...rest.map(point => `L ${point.x} ${point.y}`)].join(' ')
+}
+
+export function anchorEdgeToNodeShapes(edge, nodesByID) {
+  const points = (edge.points || []).map(point => ({ x: Number(point.x), y: Number(point.y) }))
+  if (points.length < 2) return edge
+
+  const from = nodesByID.get(edge.from)
+  const to = nodesByID.get(edge.to)
+  if (from) points[0] = shapeBoundaryPoint(from, points[1])
+  if (to) points[points.length - 1] = shapeBoundaryPoint(to, points[points.length - 2])
+  return { ...edge, points }
+}
+
+export function shapeBoundaryPoint(node, toward) {
+  const x = Number(node.x)
+  const y = Number(node.y)
+  const dx = Number(toward.x) - x
+  const dy = Number(toward.y) - y
+  const halfWidth = Math.max(1, Number(node.width) / 2)
+  const halfHeight = Math.max(1, Number(node.height) / 2)
+  if (!Number.isFinite(dx) || !Number.isFinite(dy) || (dx === 0 && dy === 0)) return { x, y }
+
+  let scale
+  if (node.shape === 'diamond') {
+    scale = 1 / (Math.abs(dx) / halfWidth + Math.abs(dy) / halfHeight)
+  } else if (node.shape === 'circle') {
+    scale = 1 / Math.sqrt((dx * dx) / (halfWidth * halfWidth) + (dy * dy) / (halfHeight * halfHeight))
+  } else {
+    const scaleX = dx === 0 ? Infinity : halfWidth / Math.abs(dx)
+    const scaleY = dy === 0 ? Infinity : halfHeight / Math.abs(dy)
+    scale = Math.min(scaleX, scaleY)
+  }
+
+  return {
+    x: roundCoord(x + dx * scale),
+    y: roundCoord(y + dy * scale),
+  }
+}
+
+function roundCoord(value) {
+  return Math.round(value * 1000) / 1000
 }
 
 export function measureNodeLabel(label, opts = {}) {

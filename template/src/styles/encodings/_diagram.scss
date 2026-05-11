@@ -87,26 +87,35 @@
     stroke-width: 1px;
   }
 
-  .sequence-svg-actor rect,
-  .er-svg-entity-frame {
+  .sequence-svg-actor rect {
     fill: var(--diagram-surface) !important;
     stroke: var(--diagram-border-strong) !important;
     stroke-width: 1.2px !important;
   }
 
+  .er-svg-entity-frame {
+    fill: var(--diagram-surface) !important;
+    stroke: var(--diagram-border) !important;
+    stroke-width: 1px !important;
+  }
+
   .er-svg-entity-header {
-    fill: var(--diagram-surface-soft) !important;
+    fill: var(--diagram-surface) !important;
     stroke: none !important;
   }
 
-  .er-svg-row-divider {
+  .er-svg-row-divider,
+  .er-svg-column-divider {
     stroke: var(--diagram-border);
     stroke-width: 1px;
   }
 
-  .er-svg-entity-title,
-  .er-svg-attribute.key {
-    font-weight: 650;
+  .er-svg-entity-title {
+    font-weight: 500;
+  }
+
+  .er-svg-attribute-key {
+    font-weight: 500;
   }
 
   .state-svg-pseudo.initial circle,
@@ -131,6 +140,17 @@
   .tree-svg-edge-text {
     fill: var(--diagram-ink);
     font-size: var(--diagram-font-size-small) !important;
+  }
+
+  .flow-svg-edge-text,
+  .sequence-svg-message-text,
+  .state-svg-edge-text,
+  .er-svg-edge-text,
+  .tree-svg-edge-text {
+    paint-order: stroke;
+    stroke: var(--diagram-canvas);
+    stroke-linejoin: round;
+    stroke-width: 5px;
   }
 
   .quadrant-svg-title {
@@ -285,11 +305,8 @@
     stroke: var(--diagram-accent-stroke) !important;
   }
 
-  .edgeLabel,
-  .labelBackground {
-    background-color: var(--diagram-canvas) !important;
-    fill: var(--diagram-canvas) !important;
-    opacity: 0.92;
+  .edgeLabel {
+    background-color: transparent !important;
   }
 }
 
