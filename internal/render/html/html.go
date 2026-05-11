@@ -1,7 +1,7 @@
 // Package html is the HTML renderer. It loads the embedded template shell plus
 // Vite-built runtime packs and substitutes source + derived render data slots.
 //
-// The actual section dispatch lives in template/src/main.js. This Go side owns
+// The browser dispatch lives in template/src/packs/core.js. This Go side owns
 // source-preserving compaction and derived render artifacts such as precompiled
 // Markdown.
 package html
@@ -11,6 +11,7 @@ import (
 	"embed"
 	"encoding/json"
 	"errors"
+	stdhtml "html"
 	"strings"
 
 	_ "embed"
@@ -24,15 +25,23 @@ var runtimeAssets embed.FS
 
 const marker = "__REPORT_DATA__"
 const renderMarker = "__REPORT_RENDER_DATA__"
+const sourceHrefMarker = "__REPORT_JSON_HREF__"
 const cssMarker = "__REPORT_CSS__"
 const runtimeMarker = "__REPORT_RUNTIME__"
 
 func Render(rawDocJSON []byte) (string, error) {
+	return RenderWithSourceHref(rawDocJSON, "report.json")
+}
+
+func RenderWithSourceHref(rawDocJSON []byte, sourceHref string) (string, error) {
 	if !strings.Contains(templateHTML, marker) {
 		return "", errors.New("template marker missing — rebuild template")
 	}
 	if !strings.Contains(templateHTML, renderMarker) {
 		return "", errors.New("render-data template marker missing — rebuild template")
+	}
+	if !strings.Contains(templateHTML, sourceHrefMarker) {
+		return "", errors.New("source-json href template marker missing — rebuild template")
 	}
 	if !strings.Contains(templateHTML, cssMarker) {
 		return "", errors.New("css template marker missing — rebuild template")
@@ -57,6 +66,7 @@ func Render(rawDocJSON []byte) (string, error) {
 
 	out := strings.Replace(templateHTML, marker, escapeForScriptTag(source), 1)
 	out = strings.Replace(out, renderMarker, escapeForScriptTag(renderData), 1)
+	out = strings.Replace(out, sourceHrefMarker, stdhtml.EscapeString(sourceHref), 1)
 	out = strings.Replace(out, cssMarker, css, 1)
 	out = strings.Replace(out, runtimeMarker, scripts, 1)
 	return out, nil

@@ -3,11 +3,14 @@ package lint
 import (
 	"fmt"
 	"sort"
+
+	"github.com/yansir/llm-report-html/internal/schema"
 )
 
 func (a *analysis) analyzeComputed(computed map[string]interface{}) {
 	depGraph := make(map[string][]string)
 	for name, formula := range computed {
+		a.analyzeFormulaOperators(fmt.Sprintf("computed.%s", name), formula)
 		deps := collectVars(formula)
 		for _, d := range deps {
 			a.requireDeclared(
@@ -28,6 +31,33 @@ func (a *analysis) analyzeComputed(computed map[string]interface{}) {
 	}
 }
 
+func (a *analysis) analyzeFormulaOperators(path string, expr interface{}) {
+	allowed := allowedJSONLogicOperators()
+	var walk func(string, interface{})
+	walk = func(p string, e interface{}) {
+		switch v := e.(type) {
+		case []interface{}:
+			for i, item := range v {
+				walk(fmt.Sprintf("%s/%d", p, i), item)
+			}
+		case map[string]interface{}:
+			if len(v) == 1 {
+				for op, args := range v {
+					if !allowed[op] {
+						a.addError(p, "unknown-operator", fmt.Sprintf("JSONLogic operator %q is not supported", op))
+					}
+					walk(p+"/"+op, args)
+				}
+				return
+			}
+			for key, value := range v {
+				walk(p+"/"+key, value)
+			}
+		}
+	}
+	walk(path, expr)
+}
+
 // scopedOps lists JSONLogic operators whose predicate body opens a new data
 // scope (the iterator). Inside such a body, `{"var":"x"}` references a field
 // of the current item, NOT a top-level cell. To reach a top-level cell from
@@ -35,6 +65,30 @@ func (a *analysis) analyzeComputed(computed map[string]interface{}) {
 var scopedOps = map[string]bool{
 	"map": true, "filter": true, "reduce": true,
 	"all": true, "some": true, "none": true,
+}
+
+var jsonLogicBuiltins = map[string]bool{
+	"==": true, "===": true, "!=": true, "!==": true,
+	">": true, ">=": true, "<": true, "<=": true,
+	"!!": true, "!": true, "%": true,
+	"log": true, "in": true, "cat": true, "substr": true,
+	"+": true, "*": true, "-": true, "/": true,
+	"min": true, "max": true, "merge": true,
+	"var": true, "missing": true, "missing_some": true,
+	"if": true, "?:": true, "and": true, "or": true,
+	"filter": true, "map": true, "reduce": true,
+	"all": true, "none": true, "some": true,
+}
+
+func allowedJSONLogicOperators() map[string]bool {
+	out := make(map[string]bool, len(jsonLogicBuiltins)+len(schema.Schema().Operators))
+	for op := range jsonLogicBuiltins {
+		out[op] = true
+	}
+	for op := range schema.Schema().Operators {
+		out[op] = true
+	}
+	return out
 }
 
 func collectVars(expr interface{}) []string {

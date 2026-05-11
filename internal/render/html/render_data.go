@@ -17,6 +17,17 @@ var markdown = goldmark.New(
 
 var bindTokenRE = regexp.MustCompile(`\{\$bind:([A-Za-z_][A-Za-z0-9_]*)\}`)
 
+const (
+	renderKey        = "render"
+	renderHTML       = "html"
+	renderTextHTML   = "textHtml"
+	renderDefHTML    = "defHtml"
+	renderAnswerHTML = "aHtml"
+	renderItems      = "items"
+	renderChildren   = "children"
+	renderRowsHTML   = "rowsHtml"
+)
+
 func PrepareRenderData(rawDocJSON []byte) ([]byte, error) {
 	decoder := json.NewDecoder(bytes.NewReader(rawDocJSON))
 	decoder.UseNumber()
@@ -50,32 +61,32 @@ func enrichSection(section map[string]any) {
 	typ, _ := section["type"].(string)
 	switch typ {
 	case "paragraph":
-		section["__html"] = markdownBlock(stringField(section, "text"))
+		setRenderField(section, renderHTML, markdownBlock(stringField(section, "text")))
 	case "quote":
-		section["__textHtml"] = markdownInline(stringField(section, "text"))
+		setRenderField(section, renderTextHTML, markdownInline(stringField(section, "text")))
 	case "code":
-		section["__html"] = highlightCode(stringField(section, "code"), stringField(section, "lang"))
+		setRenderField(section, renderHTML, highlightCode(stringField(section, "code"), stringField(section, "lang")))
 	case "callout":
-		section["__html"] = markdownBlock(stringField(section, "text"))
+		setRenderField(section, renderHTML, markdownBlock(stringField(section, "text")))
 	case "list":
 		if items, ok := section["items"].([]any); ok {
-			section["__items"] = enrichListItems(items)
+			setRenderField(section, renderItems, enrichListItems(items))
 		}
 	case "table":
 		if rows, ok := section["rows"].([]any); ok {
-			section["__rowsHtml"] = enrichTableRows(rows)
+			setRenderField(section, renderRowsHTML, enrichTableRows(rows))
 		}
 	case "timeline":
 		if items, ok := section["items"].([]any); ok {
-			section["__items"] = enrichTextItems(items, "text", "__textHtml", markdownInline)
+			setRenderField(section, renderItems, enrichTextItems(items, "text", renderTextHTML, markdownInline))
 		}
 	case "definition":
 		if items, ok := section["items"].([]any); ok {
-			section["__items"] = enrichTextItems(items, "def", "__defHtml", markdownInline)
+			setRenderField(section, renderItems, enrichTextItems(items, "def", renderDefHTML, markdownInline))
 		}
 	case "faq":
 		if items, ok := section["items"].([]any); ok {
-			section["__items"] = enrichTextItems(items, "a", "__aHtml", markdownBlock)
+			setRenderField(section, renderItems, enrichTextItems(items, "a", renderAnswerHTML, markdownBlock))
 		}
 	}
 }
@@ -86,14 +97,16 @@ func enrichListItems(items []any) []any {
 		switch v := item.(type) {
 		case string:
 			out = append(out, map[string]any{
-				"text":   v,
-				"__html": markdownInline(v),
+				"text": v,
+				renderKey: map[string]any{
+					renderHTML: markdownInline(v),
+				},
 			})
 		case map[string]any:
 			next := cloneMap(v)
-			next["__html"] = markdownInline(stringField(next, "text"))
+			setRenderField(next, renderHTML, markdownInline(stringField(next, "text")))
 			if children, ok := next["children"].([]any); ok {
-				next["__children"] = enrichListItems(children)
+				setRenderField(next, renderChildren, enrichListItems(children))
 			}
 			out = append(out, next)
 		default:
@@ -129,7 +142,7 @@ func enrichTextItems(items []any, sourceKey, htmlKey string, render func(string)
 			continue
 		}
 		next := cloneMap(m)
-		next[htmlKey] = render(stringField(next, sourceKey))
+		setRenderField(next, htmlKey, render(stringField(next, sourceKey)))
 		out = append(out, next)
 	}
 	return out
@@ -186,6 +199,15 @@ func cloneMap(src map[string]any) map[string]any {
 		out[k] = v
 	}
 	return out
+}
+
+func setRenderField(m map[string]any, key string, value any) {
+	render, _ := m[renderKey].(map[string]any)
+	if render == nil {
+		render = make(map[string]any)
+		m[renderKey] = render
+	}
+	render[key] = value
 }
 
 func stringField(m map[string]any, key string) string {

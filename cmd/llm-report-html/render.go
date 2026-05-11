@@ -37,10 +37,19 @@ func cmdRender(args []string) error {
 		return err
 	}
 
+	htmlPath := opts.outPath
+	if opts.target == "html" && !opts.stdout && htmlPath == "" {
+		htmlPath = deriveTmpPath(opts.inPath, ".html")
+	}
+
 	var out string
 	switch opts.target {
 	case "html":
-		out, err = htmlrender.Render(raw)
+		sourceHref := "report.json"
+		if htmlPath != "" {
+			sourceHref = filepath.Base(sourceJSONPath(htmlPath))
+		}
+		out, err = htmlrender.RenderWithSourceHref(raw, sourceHref)
 		if err != nil {
 			return err
 		}
@@ -57,7 +66,6 @@ func cmdRender(args []string) error {
 		return err
 	}
 
-	htmlPath := opts.outPath
 	if htmlPath == "" {
 		htmlPath = deriveTmpPath(opts.inPath, ".html")
 	}
@@ -67,7 +75,7 @@ func cmdRender(args []string) error {
 	fmt.Fprintf(os.Stderr, "wrote %s\n", htmlPath)
 
 	if opts.target == "html" {
-		jsonPath := strings.TrimSuffix(htmlPath, filepath.Ext(htmlPath)) + ".json"
+		jsonPath := sourceJSONPath(htmlPath)
 		var pretty bytes.Buffer
 		if err := json.Indent(&pretty, raw, "", "  "); err != nil {
 			return fmt.Errorf("re-format source json: %w", err)
@@ -85,6 +93,10 @@ func cmdRender(args []string) error {
 		}
 	}
 	return nil
+}
+
+func sourceJSONPath(htmlPath string) string {
+	return strings.TrimSuffix(htmlPath, filepath.Ext(htmlPath)) + ".json"
 }
 
 func parseRenderArgs(args []string) (renderOptions, error) {

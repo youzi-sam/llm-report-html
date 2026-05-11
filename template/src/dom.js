@@ -12,12 +12,6 @@ export function text(value) {
   return document.createTextNode(value)
 }
 
-export function htmlBlock(html, tag = 'div') {
-  const node = document.createElement(tag)
-  node.innerHTML = html
-  return node
-}
-
 export function errorNode(message) {
   const node = document.createElement('div')
   node.className = 'report-error'

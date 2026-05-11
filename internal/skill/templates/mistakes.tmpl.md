@@ -21,7 +21,7 @@ llm-report-html extract out.html -o doc.json
 ```
 This pulls only the source JSON slot — runtime packs stay unread.
 
-The rendered HTML also has a small top-right `JSON` disclosure for browser viewing. That is for human inspection, not for agent editing.
+The rendered HTML also has a small top-right `JSON` link to the sibling source file. That is for human inspection, not for agent editing.
 
 ### Editing the rendered HTML directly
 

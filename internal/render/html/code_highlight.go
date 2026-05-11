@@ -45,7 +45,7 @@ func codeHighlightCSS() string {
 	light := chromaCSS("github")
 	dark := chromaCSS("monokai")
 	return strings.TrimSpace(`
-.code-block code.chroma {
+.code-block code.ch-chroma {
   display: block;
   min-width: max-content;
 }

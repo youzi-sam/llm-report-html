@@ -63,21 +63,22 @@ function collectVars(expr, out = new Set()) {
 function recomputeAll() {
   // Repeated pass; converges in #computed iterations or fewer for any
   // acyclic dep graph. Cycle protection: bound iterations.
-  for (let i = 0; i < Object.keys(formulas).length + 2; i++) {
+  const limit = Object.keys(formulas).length + 2
+  for (let i = 0; i < limit; i++) {
     let changed = false
     for (const [name, formula] of Object.entries(formulas)) {
-      const next = safeApply(formula)
+      const next = applyFormula(name, formula)
       if (state[name] !== next) { state[name] = next; changed = true }
     }
     if (!changed) break
+    if (i === limit - 1) throw new Error('computed formulas did not converge')
   }
 }
 
-function safeApply(formula) {
+function applyFormula(name, formula) {
   try { return jsonLogic.apply(formula, state) }
   catch (e) {
-    console.warn('jsonLogic apply failed', formula, e)
-    return null
+    throw new Error(`computed.${name}: ${e.message}`)
   }
 }
 
@@ -91,7 +92,7 @@ export function setCell(name, value) {
     if (seen.has(n)) return
     seen.add(n)
     for (const d of dependents.get(n) || []) {
-      const next = safeApply(formulas[d])
+      const next = applyFormula(d, formulas[d])
       if (state[d] !== next) {
         state[d] = next
         notify(d)

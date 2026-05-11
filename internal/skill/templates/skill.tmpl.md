@@ -9,7 +9,7 @@ Render typed JSON to a self-contained, optionally interactive HTML report.
 
 Rendered reports include:
 - an automatic TOC from rendered `h2`-`h4` headings when there are at least two headings,
-- a small top-right `JSON` disclosure that formats the embedded source JSON on demand,
+- a small top-right `JSON` link that opens the sibling source JSON file,
 - precompiled code highlighting for recognized `code.lang` values, without browser highlighter JS.
 
 ## When to invoke

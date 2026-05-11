@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -29,17 +30,20 @@ func TestGeneratedSchemaIsCurrent(t *testing.T) {
 }
 
 func TestHTMLRuntimeUsesGeneratedCatalog(t *testing.T) {
-	mainJS := readRepoFile(t, "template", "src", "main.js")
-	if !strings.Contains(mainJS, "import { CATALOG } from './generated/catalog.js'") {
-		t.Fatal("template/src/main.js must import the schema-generated catalog")
+	if _, err := os.Stat(filepath.Join("..", "..", "template", "src", "main.js")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("template/src/main.js is a stale bootstrap entry; got stat err %v", err)
 	}
-	if strings.Contains(mainJS, "const CATALOG =") {
-		t.Fatal("template/src/main.js must not hand-write CATALOG")
+	coreJS := readRepoFile(t, "template", "src", "packs", "core.js")
+	if !strings.Contains(coreJS, "import { CATALOG } from '../generated/catalog.js'") {
+		t.Fatal("template/src/packs/core.js must import the schema-generated catalog")
+	}
+	if strings.Contains(coreJS, "const CATALOG =") {
+		t.Fatal("template/src/packs/core.js must not hand-write CATALOG")
 	}
 }
 
 func TestEverySchemaSurfaceHasHTMLImplementation(t *testing.T) {
-	encodingsJS := readRepoFile(t, "template", "src", "encodings.js")
+	encodingsJS := readRepoFiles(t, "template", "src", "encodings.js", "template", "src", "encodings")
 	layoutsJS := readRepoFile(t, "template", "src", "layouts.js")
 	for _, name := range SurfaceList() {
 		def := Schema().SurfaceCatalog[name]
@@ -72,9 +76,49 @@ func TestSchemaOperatorsMatchJSImplementations(t *testing.T) {
 	}
 }
 
+func readRepoFiles(t *testing.T, parts ...string) string {
+	t.Helper()
+	if len(parts)%3 != 0 {
+		t.Fatalf("readRepoFiles expects triples, got %d parts", len(parts))
+	}
+	var out strings.Builder
+	for i := 0; i < len(parts); i += 3 {
+		path := filepath.Join("..", "..", parts[i], parts[i+1], parts[i+2])
+		info, err := os.Stat(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !info.IsDir() {
+			out.WriteString(readRepoPath(t, path))
+			out.WriteByte('\n')
+			continue
+		}
+		err = filepath.WalkDir(path, func(path string, d os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() || filepath.Ext(path) != ".js" {
+				return nil
+			}
+			out.WriteString(readRepoPath(t, path))
+			out.WriteByte('\n')
+			return nil
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	return out.String()
+}
+
 func readRepoFile(t *testing.T, parts ...string) string {
 	t.Helper()
 	path := filepath.Join(append([]string{"..", ".."}, parts...)...)
+	return readRepoPath(t, path)
+}
+
+func readRepoPath(t *testing.T, path string) string {
+	t.Helper()
 	body, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)

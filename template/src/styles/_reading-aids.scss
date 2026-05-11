@@ -1,54 +1,27 @@
 @use 'tokens' as *;
 @use 'mixins' as *;
 
-.source-json {
+.source-json-link {
   position: fixed;
   top: 8px;
   right: 8px;
   z-index: 20;
   color: var(--md-slate-500);
-  background: transparent;
-  border: none;
-  border-radius: 0;
+  background: color-mix(in srgb, var(--md-paper) 88%, transparent);
+  border: 1px solid var(--md-slate-200);
+  border-radius: $r-sm;
   opacity: 0.68;
-  max-width: calc(100vw - 16px);
   margin: 0;
-  overflow: visible;
+  padding: 3px 6px;
   @include code-font;
   font-size: 10px;
+  line-height: 1.2;
+  text-decoration: none;
 
-  &[open] {
+  &:hover,
+  &:focus-visible {
+    color: var(--md-pond);
     opacity: 1;
-  }
-
-  summary {
-    justify-content: center;
-    background: color-mix(in srgb, var(--md-paper) 88%, transparent);
-    border: 1px solid var(--md-slate-200);
-    border-radius: $r-sm;
-    min-width: 42px;
-    margin: 0;
-    padding: 3px 6px;
-    font-size: 10px;
-    line-height: 1.2;
-    backdrop-filter: blur(8px);
-  }
-
-  summary::after {
-    display: none;
-  }
-
-  pre {
-    width: min(720px, calc(100vw - 16px));
-    max-height: min(70vh, 720px);
-    margin: 6px 0 0;
-    padding: 10px;
-    color: var(--md-ink);
-    background: color-mix(in srgb, var(--md-paper) 96%, transparent);
-    border: 1px solid var(--md-slate-200);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(10px);
-    white-space: pre;
   }
 }
 

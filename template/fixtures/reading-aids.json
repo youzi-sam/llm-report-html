@@ -1,6 +1,6 @@
 {
   "title": "Reading Aids Smoke",
-  "subtitle": "TOC, source JSON, and code highlighting",
+  "subtitle": "TOC, source JSON link, and code highlighting",
   "sections": [
     {
       "type": "heading",
@@ -28,7 +28,7 @@
     },
     {
       "type": "paragraph",
-      "text": "The JSON control reuses the embedded source slot."
+      "text": "The JSON link opens the sibling source file."
     }
   ]
 }

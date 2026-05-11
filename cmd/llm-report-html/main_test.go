@@ -22,6 +22,24 @@ func TestRenderMarkdownTargetUnsupported(t *testing.T) {
 	}
 }
 
+func TestRenderHTMLLinksSiblingSourceJSON(t *testing.T) {
+	path := writeTempDoc(t, `{"sections":[{"type":"paragraph","text":"hello"}]}`)
+	outPath := filepath.Join(t.TempDir(), "report.html")
+	if err := cmdRender([]string{path, "-o", outPath, "--no-open"}); err != nil {
+		t.Fatal(err)
+	}
+	html, err := os.ReadFile(outPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(html), `class="source-json-link" href="report.json" target="_blank"`) {
+		t.Fatalf("expected sibling source JSON link, got %s", html)
+	}
+	if _, err := os.Stat(filepath.Join(filepath.Dir(outPath), "report.json")); err != nil {
+		t.Fatalf("expected sibling source json to be written: %v", err)
+	}
+}
+
 func TestValidateUnknownSurfaceUnsupported(t *testing.T) {
 	path := writeTempDoc(t, `{"sections":[{"type":"raw_diagram","code":"A --> B"}]}`)
 	err := cmdValidate([]string{path})
@@ -143,6 +161,17 @@ func TestValidateComputedCycleFails(t *testing.T) {
 	err := cmdValidate([]string{path})
 	if err == nil || !strings.Contains(err.Error(), "cycle") {
 		t.Fatalf("expected cycle semantic error, got %v", err)
+	}
+}
+
+func TestValidateComputedUnknownOperatorFails(t *testing.T) {
+	path := writeTempDoc(t, `{
+		"computed":{"x":{"not_a_real_operator":[1,2]}},
+		"sections":[{"type":"stat","label":"X","value":{"$bind":"x"}}]
+	}`)
+	err := cmdValidate([]string{path})
+	if err == nil || !strings.Contains(err.Error(), "unknown-operator") {
+		t.Fatalf("expected unknown-operator semantic error, got %v", err)
 	}
 }
 
