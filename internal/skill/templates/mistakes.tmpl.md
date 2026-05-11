@@ -80,6 +80,12 @@ Do not use bold paragraphs as section titles. Use `heading`; the rendered report
 
 Use `code.lang` for recognized languages (`go`, `javascript`, `typescript`, `python`, `json`, etc.). Unknown languages render as escaped plain code; do not fake highlighting with inline HTML.
 
+### Math delimiter mistakes
+
+Use `math.tex` for display formulas and `\(...\)` for inline formulas. Do not write `$...$` or `$$...$$`; dollar delimiters are treated as ordinary text because reports often contain currency.
+
+Invalid TeX blocks `validate` and `render`. Fix the formula source instead of pasting rendered HTML.
+
 ## Semantic validation errors
 
 These block both `validate` and `render`.

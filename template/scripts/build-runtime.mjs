@@ -44,6 +44,8 @@ for (const [name, entry] of packs) {
   rmSync(outDir, { recursive: true, force: true })
 }
 
+copyKaTeXRenderer()
+
 writeFileSync(join(dist, 'index.html'), `<!doctype html>
 <html lang="zh">
 <head>
@@ -85,4 +87,10 @@ function findFiles(dir) {
 
 function globalName(name) {
   return 'LRH_' + name.replace(/[^A-Za-z0-9]/g, '_').toUpperCase()
+}
+
+function copyKaTeXRenderer() {
+  const katexDist = join(root, 'node_modules', 'katex', 'dist')
+  cpSync(join(katexDist, 'katex.min.js'), join(assets, 'katex.min.js'))
+  cpSync(join(katexDist, 'contrib', 'mhchem.min.js'), join(assets, 'mhchem.min.js'))
 }

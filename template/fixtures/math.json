@@ -1,0 +1,38 @@
+{
+  "title": "Math Smoke",
+  "sections": [
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Inline Formula"
+    },
+    {
+      "type": "paragraph",
+      "text": "The identity \\(a^2 + b^2 = c^2\\) is inline, while $100 stays plain text."
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Block Formula"
+    },
+    {
+      "type": "math",
+      "tex": "\\int_0^1 x^2 \\, dx = \\frac{1}{3}",
+      "display": true
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "Chemistry Formula"
+    },
+    {
+      "type": "paragraph",
+      "text": "Chemical notation works inline: \\(\\ce{CO2 + H2O <=> HCO3- + H+}\\), and physical units work as \\(\\pu{1.2e-3 mol L-1}\\)."
+    },
+    {
+      "type": "math",
+      "tex": "\\ce{Cr2O7^2- + 14H+ + 6e- -> 2Cr^3+ + 7H2O}",
+      "display": true
+    }
+  ]
+}

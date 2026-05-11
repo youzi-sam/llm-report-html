@@ -94,6 +94,7 @@ Once you have the 20% beats, surface choice **falls out** — there's almost no 
 | A comparison (A vs B) | `columns` with two `callout`s, or `table` |
 | A sequence in time | `timeline` |
 | A relation / process | `diagram` |
+| A formula / derivation | `math` |
 | A deep dive most readers skip | `details` (default folded) |
 | An attributed claim | `quote` (with `by`) |
 | Q & A pairs | `faq` |

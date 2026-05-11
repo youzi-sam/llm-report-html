@@ -1,0 +1,22 @@
+.math-block {
+  margin: 1.75rem 0 2.25rem;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 0.75rem 0;
+  text-align: center;
+}
+
+.math-block math[display="block"] {
+  display: block;
+  line-height: 1.8;
+  margin: 0.9rem auto;
+}
+
+math {
+  color: var(--md-ink);
+  font-size: 1em;
+}
+
+p math {
+  font-size: 0.96em;
+}

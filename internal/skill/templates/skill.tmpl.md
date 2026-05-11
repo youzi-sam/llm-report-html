@@ -10,7 +10,8 @@ Render typed JSON to a self-contained, optionally interactive HTML report.
 Rendered reports include:
 - an automatic TOC from rendered `h2`-`h4` headings when there are at least two headings,
 - a small top-right `JSON` link that opens the sibling source JSON file,
-- precompiled code highlighting for recognized `code.lang` values, without browser highlighter JS.
+- precompiled code highlighting for recognized `code.lang` values, without browser highlighter JS,
+- render-time TeX validation compiled to native MathML, without browser formula JS or KaTeX fonts.
 
 ## When to invoke
 
@@ -44,6 +45,7 @@ These are **non-skippable**. If you can't answer one in writing, EITHER ask the 
      a comparison       → columns OR table
      a sequence in time → timeline
      a relation graph   → diagram
+     a formula           → math OR inline \(...\)
      deep-dive most readers skip → details
      attributed claim   → quote
      Q & A              → faq
@@ -87,6 +89,7 @@ Each line: name — when to pick → minimal field shape. For full per-surface e
 Notes:
 - `heading` sections automatically feed the TOC; use real heading hierarchy instead of fake bold paragraphs.
 - `code.lang` is highlighted at render time when the language is recognized. Unknown languages render as escaped plain code.
+- Math uses explicit TeX: block formulas use `{"type":"math","tex":"..."}`; inline formulas use `\(...\)`. Chemical notation supports mhchem `\ce{...}` and `\pu{...}`. Never use `$...$`.
 
 ## Reactive cells (optional, for interactivity)
 

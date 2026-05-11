@@ -49,6 +49,65 @@ func TestPrepareRenderDataHighlightsCode(t *testing.T) {
 	}
 }
 
+func TestPrepareRenderDataRendersBlockAndInlineMath(t *testing.T) {
+	raw := []byte(`{
+		"sections": [
+			{"type": "paragraph", "text": "Pythagoras: \\(a^2+b^2=c^2\\), not $100."},
+			{"type": "math", "tex": "\\\\int_0^1 x^2 \\\\, dx = \\\\frac{1}{3}", "display": true}
+		]
+	}`)
+	renderData, err := PrepareRenderData(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(renderData, &doc); err != nil {
+		t.Fatal(err)
+	}
+	sections := doc["sections"].([]any)
+	paragraph := sections[0].(map[string]any)
+	block := sections[1].(map[string]any)
+	if got := renderString(t, paragraph, "html"); !strings.Contains(got, `<math`) || !strings.Contains(got, "$100") || strings.Contains(got, `katex-html`) {
+		t.Fatalf("inline math mismatch: %q", got)
+	}
+	if got := renderString(t, block, "html"); !strings.Contains(got, `<math`) || !strings.Contains(got, `display="block"`) || strings.Contains(got, `katex-html`) {
+		t.Fatalf("block math mismatch: %q", got)
+	}
+}
+
+func TestPrepareRenderDataSupportsChemicalNotationAndUnits(t *testing.T) {
+	raw := []byte(`{
+		"sections": [
+			{"type": "paragraph", "text": "Buffer equilibrium: \\(\\ce{CO2 + H2O <=> HCO3- + H+}\\), with concentration \\(\\pu{1.2e-3 mol L-1}\\)."},
+			{"type": "math", "tex": "\\ce{Cr2O7^2- + 14H+ + 6e- -> 2Cr^3+ + 7H2O}", "display": true}
+		]
+	}`)
+	renderData, err := PrepareRenderData(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(renderData, &doc); err != nil {
+		t.Fatal(err)
+	}
+	sections := doc["sections"].([]any)
+	paragraph := renderString(t, sections[0].(map[string]any), "html")
+	block := renderString(t, sections[1].(map[string]any), "html")
+	if strings.Count(paragraph, `<math`) != 2 || !strings.Contains(paragraph, `CO2 + H2O`) || !strings.Contains(paragraph, `1.2e-3 mol L-1`) {
+		t.Fatalf("inline chemical math mismatch: %q", paragraph)
+	}
+	if !strings.Contains(block, `<math`) || !strings.Contains(block, `Cr2O7^2- + 14H+ + 6e-`) {
+		t.Fatalf("block chemical math mismatch: %q", block)
+	}
+}
+
+func TestPrepareRenderDataRejectsInvalidMath(t *testing.T) {
+	raw := []byte(`{"sections":[{"type":"math","tex":"\\\\notacommand{"}]}`)
+	if _, err := PrepareRenderData(raw); err == nil || !strings.Contains(err.Error(), "KaTeX render failed") {
+		t.Fatalf("expected KaTeX error, got %v", err)
+	}
+}
+
 func TestRenderKeepsExtractableSourceDataSeparateFromRenderData(t *testing.T) {
 	raw := []byte(`{"sections":[{"type":"paragraph","text":"**hi**"}]}`)
 	out, err := RenderWithSourceHref(raw, "custom-report.json")
@@ -69,6 +128,33 @@ func TestRenderKeepsExtractableSourceDataSeparateFromRenderData(t *testing.T) {
 	}
 	if !strings.Contains(slot(out, `id="report-render-data"`), `"render"`) {
 		t.Fatal("render slot must contain derived render fields")
+	}
+}
+
+func TestRenderUsesNativeMathMLWithoutKaTeXCSS(t *testing.T) {
+	static, err := RenderWithSourceHref([]byte(`{"sections":[{"type":"paragraph","text":"plain"}]}`), "plain.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(static, "KaTeX_Main") {
+		t.Fatal("static report should not include KaTeX CSS")
+	}
+
+	withMath, err := RenderWithSourceHref([]byte(`{"sections":[{"type":"math","tex":"E=mc^2"}]}`), "math.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(withMath, "KaTeX_Main") || strings.Contains(withMath, "@font-face") || strings.Contains(withMath, "katex-html") {
+		t.Fatal("math report must not include KaTeX CSS/font or HTML layout layer")
+	}
+
+	var rendered map[string]any
+	if err := json.Unmarshal([]byte(slot(withMath, `id="report-render-data"`)), &rendered); err != nil {
+		t.Fatal(err)
+	}
+	section := rendered["sections"].([]any)[0].(map[string]any)
+	if !strings.Contains(renderString(t, section, "html"), `<math`) {
+		t.Fatal("math report should include native MathML")
 	}
 }
 

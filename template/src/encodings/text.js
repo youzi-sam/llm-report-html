@@ -27,6 +27,12 @@ export function createTextEncodings() {
       return pre
     },
 
+    math: section => {
+      const block = el('div', { class: 'math-block' })
+      setTrustedHTML(block, section, 'html')
+      return block
+    },
+
     divider: () => el('hr'),
 
     list: section => {

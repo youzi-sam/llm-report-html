@@ -1,0 +1,51 @@
+{
+  "kind": "encoding",
+  "binds": "math",
+  "fields": [
+    "tex",
+    "display"
+  ],
+  "usage": "数学公式，TeX 语法，渲染期预编译",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "tex"
+    ],
+    "properties": {
+      "tex": {
+        "type": "string",
+        "minLength": 1
+      },
+      "display": {
+        "type": "boolean"
+      },
+      "if": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "$bind"
+            ],
+            "properties": {
+              "$bind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "tex": "E = mc^2",
+      "display": true
+    }
+  ]
+}

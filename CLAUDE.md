@@ -10,6 +10,7 @@ For Agent usage, read `.claude/skills/llm-report-html/SKILL.md` (regenerate with
 |---|---|---|
 | Surface catalog + per-surface schema | `internal/schema/manifest-src/surfaces/*.json` | `manifest.json`, `schema.json`, skill, CLI `schema --catalog`, generated HTML runtime catalog |
 | Cell / expression schema | `internal/schema/manifest-src/defs/cell*.json`, `expr.json` | `manifest.json`, `schema.json`, validators, skill |
+| Math rendering | `internal/render/html/math.go`, `template/scripts/build-runtime.mjs` | render-time TeX validation, native MathML output |
 | Operator module compiler | `internal/runtimejs/` | render/validate operator gate |
 | Mistake catalog | `internal/schema/manifest-src/base.json` `presentationNotes` | `manifest.json`, `schema.json`, skill `mistakes.md` |
 | Recipes | `recipes/*.json` (Go embed) + `recipes/runtime/*.mjs` | skill `assets/recipes/` (mirrored on `make skill`) |
@@ -71,3 +72,7 @@ A bigger change. Touch:
 - `make` to rebuild and regenerate skill
 
 Schema validation catches shape errors. Semantic validation catches broken references and blocks render.
+
+## Math formulas
+
+Use `math` sections for display TeX and `\(...\)` for inline formulas in markdown-capable text fields. Do not support `$...$`; it collides with currency prose. KaTeX is render-time only: Go uses it to validate TeX and emit native MathML. The browser does not receive KaTeX CSS, fonts, or formula JS. Chemical notation is available through mhchem `\ce{...}` and physical units through `\pu{...}`.
